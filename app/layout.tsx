@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   keywords: ["nature", "photography", "wilderness", "conservation", "travel", "landscapes", "environment"],
   authors: [{ name: "Nature's Embrace" }],
   openGraph: {
-    title: "Nature's Embrace | อ้อมกอดแห่งธรรมชาติ",
+    title: "Anukun Boontha",
     description: "Discover the serenity within. Explore Earth's most beautiful landscapes.",
     type: "website",
   },
