@@ -1,0 +1,32 @@
+{
+  "pageTitle": "Profile",
+  "pageDescription": "A briefly about myself and what i learning",
+  "name": "Anukun Boontha (Daniel)",
+  "age": "19 Years Old",
+  "pronouns": "He/Him",
+  "bio": "I am a Cyber Security student at Suan Dusit University with a deep curiosity for network defense, ethical hacking, and secure software development. My goal is to bridge the gap between complex security protocols and user-friendly digital experiences.",
+  "education": {
+    "university": "Suan Dusit University",
+    "faculty": "Faculty of Science and Technology",
+    "program": "Cyber Security Program",
+    "year": "2023 - Present"
+  },
+  "contact": {
+    "instagram": "@o_o.beam.000",
+    "facebook": "Beam Anukun",
+    "tiktok": "@beam999888"
+  },
+  "learning": [
+    "Website system maintenance",
+    "3D game development"
+  ],
+  "tools": [
+    "VSCode",
+    "Bash",
+    "PHP",
+    "Antigrsvity",
+    "Unity",
+    "trae"
+  ],
+  "profileImage": "/uploads/1766471099803-beam.jpg"
+}

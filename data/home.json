@@ -1,0 +1,69 @@
+{
+  "slides": [
+    {
+      "type": "pair",
+      "left": {
+        "image": "/uploads/1766417713088-pexels-mitja-juraja-357365-970517.jpg",
+        "role": "Cyber Security",
+        "title": "Secure Infrastructure",
+        "description": "Building resilient systems and protecting digital assets through modern security practices."
+      },
+      "right": {
+        "image": "/uploads/1766464424605-2.jpg",
+        "role": "Role",
+        "title": "This image serves as a high-fidelity mockup or a concept design for a landing page, characterized by a bold, painterly aesthetic. It blends artistic expression with functional web interface elements.",
+        "description": "Description"
+      }
+    },
+    {
+      "type": "pair",
+      "left": {
+        "image": "/uploads/1766417713120-pexels-negativespace-97077.jpg",
+        "role": "Web Design",
+        "title": "Creative UITesting Pair Title",
+        "description": "User-centric design."
+      },
+      "right": {
+        "image": "/uploads/1766417713126-pexels-pixabay-60504.jpg",
+        "role": "Development",
+        "title": "Clean Code",
+        "description": "Scalable architecture."
+      }
+    },
+    {
+      "type": "split",
+      "image": "/uploads/1766465049447-9.jpg",
+      "role": "",
+      "title": "",
+      "description": ""
+    }
+  ],
+  "role": "กอเอ๋ยกอไก่ ขอไข่ในกางเกง",
+  "title": "Picture",
+  "bio": "auauauauauuauauauuauuauaahahahahaha",
+  "itemsTitle": "Selected Works",
+  "itemsDescription": "A collection of projects exploring security vulnerabilities and defensive strategies.",
+  "homeItems": [
+    {
+      "id": 1766462331840,
+      "title": "Art of picture",
+      "description": "like",
+      "imageUrls": [
+        "/uploads/1766462331765-1.jpg",
+        "/uploads/1766462331811-2.jpg",
+        "/uploads/1766462331805-3.jpg",
+        "/uploads/1766462331817-4.jpg"
+      ]
+    },
+    {
+      "id": 1766465195167,
+      "title": "uouououou",
+      "description": "ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+      "imageUrls": [
+        "/uploads/1766465195130-ภาพหน้าจอ-(35).png",
+        "/uploads/1766465195143-ภาพหน้าจอ-(36).png",
+        "/uploads/1766465195115-ภาพหน้าจอ-(283).png"
+      ]
+    }
+  ]
+}

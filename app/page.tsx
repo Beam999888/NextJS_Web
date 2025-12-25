@@ -1,149 +1,184 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { useLanguage } from "./context/LanguageContext";
+import HomeSlider from "./components/HomeSlider";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
+interface HomeItem {
+  id: number;
+  title: string;
+  description: string;
+  imageUrls: string[];
+}
 
-export default function Home() {
-  const [scrollY, setScrollY] = useState(0);
-  
-  // 1. กำหนดรายการเมนูทั้งหมดไว้ใน Array เพื่อให้จัดการง่าย
-  const menuItems = [
-    { label: 'HOME', href: '/' },
-    { label: 'PRODUCTS', href: '/product' },
-    { label: 'ABOUT', href: '#about' },
-    { label: 'PROFILE', href: '/profile' },
-    { label: 'CONTACT', href: '/contact' },
-  ];
+function isVideo(url: string) {
+  return url.match(/\.(mp4|webm|ogg)$/i);
+}
 
-  // 2. สร้าง State สำหรับเก็บหน้าปัจจุบัน (Default คือหน้าแรก)
-  const [activePage, setActivePage] = useState(menuItems[0]);
+function HomeItemCard({ item }: { item: HomeItem }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+    if (!item.imageUrls || item.imageUrls.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % item.imageUrls.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [item.imageUrls]);
 
-    // เช็ค Path ปัจจุบันเพื่ออัปเดตชื่อหน้าบนเมนู
-    const currentPath = window.location.pathname;
-    const currentMenu = menuItems.find(item => item.href === currentPath);
-    if (currentMenu) setActivePage(currentMenu);
+  const nextSlide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!item.imageUrls) return;
+    setCurrentImageIndex((prev) => (prev + 1) % item.imageUrls.length);
+  };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // 3. กรองเอาเฉพาะหน้า "ที่ไม่ใช่หน้าปัจจุบัน" มาแสดงใน Dropdown
-  const otherMenus = menuItems.filter(item => item.label !== activePage.label);
+  const prevSlide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!item.imageUrls) return;
+    setCurrentImageIndex((prev) => (prev - 1 + item.imageUrls.length) % item.imageUrls.length);
+  };
 
   return (
-    <div className="min-h-screen relative bg-[#0f2027]">
-      {/* 1. Full Screen Video Section (Top) */}
-      <div className="relative h-screen w-full overflow-hidden">
-        {/* Logo - Left Side */}
-        <div className="fixed top-8 left-8 z-50">
-          <div className="text-white text-2xl font-bold tracking-wider uppercase drop-shadow-lg">
-            Anukun Boontha
-          </div>
-        </div>
+    <div className="group cursor-pointer">
+      <div className="w-full aspect-[4/3] bg-gray-50 mb-6 relative overflow-hidden group-hover:shadow-xl transition-all duration-500 rounded-3xl">
+        {item.imageUrls && item.imageUrls.length > 0 ? (
+          <>
+            {item.imageUrls.map((url, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+              >
+                {isVideo(url) ? (
+                  <video src={url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                ) : (
+                  <img src={url} alt={`${item.title} - ${index}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                )}
+              </div>
+            ))}
 
-        {/* Navigation Menu - แก้ไขเฉพาะจุดนี้ตามที่คุณต้องการ */}
-        <div className="fixed top-8 right-8 z-50 flex flex-col items-end">
-          <div className="relative group flex flex-col items-end">
-            
-            {/* Main Trigger: จะแสดงชื่อหน้าปัจจุบันเสมอ */}
-            <div className="text-white text-xl font-bold uppercase tracking-widest flex items-center gap-2 hover:text-[var(--sage-green)] transition-colors drop-shadow-lg cursor-pointer">
-              {activePage.label}
-              <svg className="w-5 h-5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-
-            {/* Dropdown Content: รายการอื่นๆ ที่ไม่ใช่หน้าปัจจุบัน */}
-            <div className="absolute top-full right-0 mt-4 flex flex-col gap-4 items-end opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-[-10px]">
-              {otherMenus.map((item) => (
-                <a 
-                  key={item.label}
-                  href={item.href} 
-                  className="text-white text-lg font-semibold hover:text-[var(--sage-green)] transition-colors uppercase tracking-widest drop-shadow-md whitespace-nowrap"
+            {/* Controls */}
+            {item.imageUrls.length > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition-colors opacity-0 group-hover:opacity-100 shadow-md"
                 >
-                  {item.label}
-                </a>
-              ))}
-            </div>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition-colors opacity-0 group-hover:opacity-100 shadow-md"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </>
+            )}
+
+            {/* Dots */}
+            {item.imageUrls.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                {item.imageUrls.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
+                  ></div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-100 uppercase tracking-widest text-[10px] font-bold">
+            No Media
           </div>
+        )}
+      </div>
+      <div className="border-b border-black/5 pb-6 group-hover:border-black/20 transition-colors">
+        <h3 className="text-2xl font-['Tenor_Sans',serif] mb-3">{item.title}</h3>
+        <p className="text-sm text-black/60 font-light leading-relaxed line-clamp-2">{item.description}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { t } = useLanguage();
+  const [slides, setSlides] = useState<any[]>([]);
+  const [homeItems, setHomeItems] = useState<HomeItem[]>([]);
+  const [content, setContent] = useState({ role: '', title: '', bio: '', itemsTitle: '', itemsDescription: '' });
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const res = await fetch('/api/home');
+        if (res.ok) {
+          const data = await res.json();
+          setSlides(data.slides || []);
+          setHomeItems(data.homeItems || []);
+          setContent({
+            role: data.role || '',
+            title: data.title || '',
+            bio: data.bio || '',
+            itemsTitle: data.itemsTitle || '',
+            itemsDescription: data.itemsDescription || ''
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch home data', error);
+      }
+    };
+    fetchHomeData();
+  }, []);
+
+  return (
+    <div className="w-full">
+      {/* Home Slider at the top */}
+      {slides.length > 0 && (
+        <div className="container mx-auto px-6 pt-10">
+          <HomeSlider slides={slides} />
         </div>
+      )}
 
-        {/* Video Element (ใช้ Code เดิมของคุณ) */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="https://www.pexels.com/th-th/download/video/7710243/" type="video/mp4" />
-        </video>
-
-        {/* Overlay Dark Gradient */}
-        <div className="absolute inset-0 bg-black/30" />
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 py-12 text-center animate-fade-in-up">
+        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-12 shadow-lg max-w-4xl mx-auto">
+          <p className="text-sm md:text-base font-bold uppercase tracking-[0.3em] text-black mb-6">
+            {content.role || t.home.role}
+          </p>
+          <h1 className="text-5xl md:text-7xl lg:text-9xl font-['Tenor_Sans',serif] leading-none mb-8 text-black whitespace-pre-line">
+            {content.title || 'ANUKUN\nBOONTHA'}
+          </h1>
+          <p className="max-w-xl text-black font-light leading-relaxed mb-12 mx-auto">
+            {content.bio || t.home.bio}
+          </p>
+          <a href="/profile" className="group relative inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] border-b border-black pb-1 hover:text-black hover:border-black transition-all">
+            {t.home.discover}
+            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
       </div>
 
-      {/* Footer Section (ใช้ Code เดิมของคุณทั้งหมด) */}
-      <footer 
-        className="relative z-10 w-full text-white py-16 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: "url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')" 
-        }}
-      >
-        <div className="absolute inset-0 bg-[#0f2027]/85 z-0" />
+      {/* Dynamic Home Items Grid */}
+      {homeItems.length > 0 && (
+        <div className="container mx-auto px-6 py-20 pb-40">
+          {/* Section Header */}
+          <div className="mb-20 text-center animate-fade-in-up">
+            <h2 className="text-4xl md:text-6xl font-['Tenor_Sans',serif] mb-6 text-black uppercase tracking-wider">
+              {content.itemsTitle || "Selected Works"}
+            </h2>
+            <div className="h-0.5 w-20 bg-black/10 mx-auto mb-8"></div>
+            <p className="max-w-xl mx-auto text-black/60 font-light leading-relaxed whitespace-pre-line">
+              {content.itemsDescription || "A collection of projects exploring security vulnerabilities and defensive strategies."}
+            </p>
+          </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col items-center text-center">
-            
-            <div className="mb-6">
-              <img
-                src="/cyber-security-logo.png"
-                alt="Cyber Security Logo"
-                className="w-32 h-32 object-cover rounded-full border-4 border-white/20 shadow-2xl"
-              />
-            </div>
-
-            <h3 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em] drop-shadow-lg text-[#1a3a32]">
-              Anukun Boontha
-            </h3>
-
-            <div className="mb-8 space-y-3 text-gray-100 max-w-xl">
-              <p className="text-lg leading-relaxed">99/9 ม.10 ต.บ้านหนองอีกึ่ม อ.อีก๋อย จ.ตระบองเมียงเจย ประเทศขแม</p>
-              <div className="flex flex-col md:flex-row gap-4 justify-center items-center text-sm font-light tracking-widest uppercase">
-                <span className="flex items-center gap-2">Tel: 999-999-9999</span>
-                <span className="hidden md:inline">|</span>
-                <span className="flex items-center gap-2">Email: accadabim@gmail.com</span>
-              </div>
-            </div>
-
-            {/* Social Icons (ใช้ Code เดิมของคุณ) */}
-            <div className="flex gap-6 mb-8">
-              <a href="#" className="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center text-black hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385h-3.047v-3.47h3.047v-2.641c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.513c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385c5.737-.9 10.125-5.864 10.125-11.854z" /></svg>
-              </a>
-              <a href="#" className="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center text-black hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-              </a>
-              <a href="#" className="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center text-black hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
-              </a>
-              <a href="#" className="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center text-black hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.65-1.62-1.12-1.09 2.79-1.13 5.96-.28 8.8.72 2.45 2.64 4.53 5.09 5.37v4.13c-4.32-1.07-7.7-4.14-9.39-8.15-1.54-3.66-1.29-7.94.63-11.44-.66.04-1.32.09-1.98.05v-4.04c2.28.32 4.14-1.07 4.54-3.32h3.31zM12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12z" /></svg>
-              </a>
-            </div>
-
-            {/* Copyright */}
-            <div className="text-xs text-gray-400 tracking-widest uppercase border-t border-white/10 pt-8 w-full">
-              <p>&copy; 2025 Anukun Boontha - All Rights Reserved | Design by Beam</p>
-            </div>
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-20">
+            {homeItems.map((item) => (
+              <HomeItemCard key={item.id} item={item} />
+            ))}
           </div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }
