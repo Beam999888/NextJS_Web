@@ -2,16 +2,39 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
+interface ProfileData {
+    pageTitle?: string;
+    pageDescription?: string;
+    profileImage?: string;
+    name?: string;
+    pronouns?: string;
+    age?: string;
+    bio?: string;
+    contact?: {
+        instagram?: string;
+        facebook?: string;
+        tiktok?: string;
+    };
+    education?: {
+        university?: string;
+        faculty?: string;
+        program?: string;
+        year?: string;
+    };
+    learning?: string[];
+    tools?: string[];
+}
+
 export default function Profile() {
     const { t } = useLanguage();
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchProfile() {
             try {
                 const res = await fetch('/api/profile');
-                const data = await res.json();
+                const data = (await res.json()) as ProfileData;
                 setProfile(data);
             } catch (error) {
                 console.error('Failed to fetch profile', error);
@@ -23,7 +46,7 @@ export default function Profile() {
     }, []);
 
     if (loading || !profile) {
-        return <div className="p-20 text-center">Loading...</div>;
+        return <div className="p-20 text-center">{t.profile.loading}</div>;
     }
 
     return (
@@ -45,7 +68,7 @@ export default function Profile() {
                     <div>
                         <div className="w-full aspect-square bg-white border border-gray-200 mb-8 overflow-hidden rounded-2xl shadow-sm">
                             {profile.profileImage ? (
-                                <img src={profile.profileImage} alt={profile.name} className="w-full h-full object-cover" />
+                                <img src={profile.profileImage} alt={profile.name || ''} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-black">
                                     <span className="tracking-widest uppercase text-xs">{t.profile.portrait}</span>
@@ -63,13 +86,13 @@ export default function Profile() {
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4 border-b border-black/10 pb-2">{t.profile.contact}</h3>
                             <ul className="space-y-2 text-sm text-black font-light">
                                 <li className="flex items-center gap-2">
-                                    <span className="font-medium text-black">Instagram:</span> {profile.contact.instagram}
+                                    <span className="font-medium text-black">{t.profile.instagram}:</span> {profile.contact?.instagram}
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <span className="font-medium text-black">Facebook:</span> {profile.contact.facebook}
+                                    <span className="font-medium text-black">{t.profile.facebook}:</span> {profile.contact?.facebook}
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <span className="font-medium text-black">Tiktok:</span> {profile.contact.tiktok}
+                                    <span className="font-medium text-black">{t.profile.tiktok}:</span> {profile.contact?.tiktok}
                                 </li>
                             </ul>
                         </div>
@@ -81,10 +104,10 @@ export default function Profile() {
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 border-b border-black/10 pb-2">{t.profile.education}</h3>
                             <div className="mb-4">
-                                <h4 className="text-lg font-serif">{profile.education.university}</h4>
-                                <p className="text-sm text-black font-medium mt-1">{profile.education.faculty}</p>
-                                <p className="text-sm text-black mt-1">{profile.education.program}</p>
-                                <p className="text-xs text-black mt-1">{profile.education.year}</p>
+                                <h4 className="text-lg font-serif">{profile.education?.university}</h4>
+                                <p className="text-sm text-black font-medium mt-1">{profile.education?.faculty}</p>
+                                <p className="text-sm text-black mt-1">{profile.education?.program}</p>
+                                <p className="text-xs text-black mt-1">{profile.education?.year}</p>
                             </div>
                         </div>
 
@@ -92,7 +115,7 @@ export default function Profile() {
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 border-b border-black/10 pb-2">{t.profile.learning}</h3>
                             <ul className="space-y-3 text-sm text-black font-light">
-                                {profile.learning.map((item: string, index: number) => (
+                                {profile.learning?.map((item: string, index: number) => (
                                     <li key={index} className="flex items-center gap-3">
                                         <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
                                         {item}
@@ -105,7 +128,7 @@ export default function Profile() {
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 border-b border-black/10 pb-2">{t.profile.tools}</h3>
                             <div className="flex flex-wrap gap-2">
-                                {profile.tools.map((tool: string, index: number) => (
+                                {profile.tools?.map((tool: string, index: number) => (
                                     <span key={index} className="bg-white px-3 py-1 rounded-full text-xs font-medium text-black border border-gray-200">
                                         {tool}
                                     </span>

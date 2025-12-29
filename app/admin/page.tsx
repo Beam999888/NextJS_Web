@@ -3,10 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+type ImageSize = 'small' | 'large';
+
+const normalizeImageSize = (value: unknown): ImageSize => (value === 'large' ? 'large' : 'small');
+
 interface Product {
     id: number;
     title: string;
+    description: string;
     imageUrls: string[];
+    imageSize?: ImageSize;
 }
 
 export default function AdminPage() {
@@ -16,6 +22,7 @@ export default function AdminPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [files, setFiles] = useState<FileList | null>(null);
+    const [imageSize, setImageSize] = useState<ImageSize>('small');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -23,6 +30,17 @@ export default function AdminPage() {
     const [metaTitle, setMetaTitle] = useState('');
     const [metaDescription, setMetaDescription] = useState('');
     const [metaProcessing, setMetaProcessing] = useState(false);
+    const maxUploadBytes = 40 * 1024 * 1024;
+
+    const validateUploadFile = (file: File) => {
+        if (file.size > maxUploadBytes) return 'File too large (max 40MB)';
+        const typeOk =
+            file.type.startsWith('image/') ||
+            file.type === 'video/mp4' ||
+            file.name.toLowerCase().endsWith('.mp4');
+        if (!typeOk) return 'Unsupported file type (allowed: images, mp4)';
+        return null;
+    };
 
     // Fetch products on load
     const fetchProducts = async () => {
@@ -42,9 +60,20 @@ export default function AdminPage() {
     }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setFiles(e.target.files);
+        const selected = e.target.files;
+        if (!selected || selected.length === 0) {
+            setFiles(null);
+            return;
         }
+        const filesArray = Array.from(selected);
+        const invalid = filesArray.map(validateUploadFile).find(Boolean);
+        if (invalid) {
+            setMessage(invalid);
+            e.target.value = '';
+            setFiles(null);
+            return;
+        }
+        setFiles(selected);
     };
 
     const handleDelete = async (id: number) => {
@@ -62,10 +91,11 @@ export default function AdminPage() {
         }
     };
 
-    const handleEdit = (product: Product & { description: string }) => {
+    const handleEdit = (product: Product) => {
         setEditingProduct(product);
         setTitle(product.title);
         setDescription(product.description);
+        setImageSize(normalizeImageSize(product.imageSize));
         // Clear files since we might not want to re-upload if not changed
         setFiles(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -76,6 +106,7 @@ export default function AdminPage() {
         setTitle('');
         setDescription('');
         setFiles(null);
+        setImageSize('small');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -91,15 +122,22 @@ export default function AdminPage() {
         setMessage('');
 
         try {
-            let imageUrls: string[] = editingProduct ? (editingProduct as any).imageUrls : [];
+            let imageUrls: string[] = editingProduct ? editingProduct.imageUrls : [];
 
             // 1. Upload Images if new files are selected
             if (files && files.length > 0) {
+                const filesArray = Array.from(files);
+                const invalid = filesArray.map(validateUploadFile).find(Boolean);
+                if (invalid) {
+                    setMessage(invalid);
+                    return;
+                }
                 const uploadPromises = Array.from(files).map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
                     const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                    const data = await res.json();
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data?.message || 'Upload failed');
                     return data.url;
                 });
 
@@ -125,6 +163,7 @@ export default function AdminPage() {
                     title,
                     description,
                     imageUrls,
+                    imageSize,
                 }),
             });
 
@@ -137,6 +176,7 @@ export default function AdminPage() {
             setDescription('');
             setFiles(null);
             setEditingProduct(null);
+            setImageSize('small');
 
             // Reset file input manually
             const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -177,6 +217,21 @@ export default function AdminPage() {
         return url.match(/\.(mp4|webm|ogg)$/i);
     };
 
+    const getFormGridClassName = (size: ImageSize) => {
+        if (size === 'small') return 'grid-cols-2 md:grid-cols-3';
+        return 'grid-cols-1';
+    };
+
+    const getMosaicClassName = (size: ImageSize) => {
+        if (size === 'small') return 'grid-cols-3 grid-rows-3';
+        return 'grid-cols-1 grid-rows-1';
+    };
+
+    const getMosaicMax = (size: ImageSize) => {
+        if (size === 'small') return 9;
+        return 1;
+    };
+
     return (
         <div className="container mx-auto px-6 py-24 max-w-5xl font-['Prompt',sans-serif]">
             {/* Premium Header with Dropdown */}
@@ -200,7 +255,7 @@ export default function AdminPage() {
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Grid Description</label>
                                 <textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="Subtitle for the grid..." rows={3} className="w-full border-b border-gray-200 py-3 bg-transparent focus:border-black outline-none transition-all placeholder:text-gray-300 resize-none" />
                             </div>
-                            <button type="submit" disabled={metaProcessing} className="w-full bg-black text-white py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-gray-800 transition-all shadow-xl">
+                            <button type="submit" disabled={metaProcessing} className="w-full bg-gray-200 text-black py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-gray-300 transition-all shadow-xl border border-black/10">
                                 {metaProcessing ? 'Saving...' : 'Save Header Settings'}
                             </button>
                         </form>
@@ -235,10 +290,10 @@ export default function AdminPage() {
                                 <input
                                     id="fileInput"
                                     type="file"
-                                    accept="image/*,video/*"
+                                    accept="image/*,video/mp4"
                                     multiple
                                     onChange={handleFileChange}
-                                    className="w-full text-sm text-gray-500 file:mr-6 file:py-3 file:px-8 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:bg-gray-900 file:text-white hover:file:bg-black transition-all cursor-pointer"
+                                    className="w-full text-sm text-gray-500 file:mr-6 file:py-3 file:px-8 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:bg-gray-900 file:text-white hover:file:bg-gray-800 transition-all cursor-pointer"
                                 />
                             </div>
                             {editingProduct && !files && (
@@ -246,8 +301,40 @@ export default function AdminPage() {
                             )}
                         </div>
 
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500 ml-1">Image Size</label>
+                            <select
+                                value={imageSize}
+                                onChange={(e) => setImageSize(e.target.value as ImageSize)}
+                                className="w-full border-b border-gray-200 py-3 bg-transparent focus:border-black outline-none transition-all text-sm"
+                            >
+                                <option value="small">Small (3 per row)</option>
+                                <option value="large">Large (new line)</option>
+                            </select>
+                        </div>
+
+                        {editingProduct?.imageUrls?.length ? (
+                            <div className="space-y-3">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500 ml-1">Current Media Preview</div>
+                                <div className={`grid gap-3 ${getFormGridClassName(imageSize)}`}>
+                                    {editingProduct.imageUrls.map((url, idx) => (
+                                        <div
+                                            key={`${url}-${idx}`}
+                                            className={`${imageSize === 'large' ? 'h-[260px] md:h-[420px]' : 'aspect-square'} bg-gray-50 rounded-2xl overflow-hidden shadow-inner`}
+                                        >
+                                            {isVideo(url) ? (
+                                                <video src={url} className="w-full h-full object-cover" muted playsInline />
+                                            ) : (
+                                                <img src={url} alt="" className="w-full h-full object-cover" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+
                         {message && (
-                            <div className={`p-4 rounded-2xl text-xs font-bold text-center ${message.includes('Success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                            <div className="p-4 rounded-2xl text-xs font-bold text-center bg-gray-100 text-gray-700 border border-gray-200">
                                 {message}
                             </div>
                         )}
@@ -256,7 +343,7 @@ export default function AdminPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 bg-black text-white py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-gray-800 hover:scale-[1.02] transition-all disabled:opacity-50 shadow-xl"
+                                className="flex-1 bg-gray-200 text-black py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-gray-300 hover:scale-[1.02] transition-all disabled:opacity-50 shadow-xl border border-black/10"
                             >
                                 {loading ? 'Processing...' : (editingProduct ? 'Save Changes' : 'Publish Product')}
                             </button>
@@ -291,11 +378,26 @@ export default function AdminPage() {
                                 {/* Media Preview */}
                                 <div className="w-24 h-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 relative shadow-inner">
                                     {product.imageUrls && product.imageUrls[0] ? (
-                                        isVideo(product.imageUrls[0]) ? (
-                                            <video src={product.imageUrls[0]} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <img src={product.imageUrls[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        )
+                                        <div className={`grid w-full h-full gap-[2px] ${getMosaicClassName(normalizeImageSize(product.imageSize))}`}>
+                                            {product.imageUrls.slice(0, getMosaicMax(normalizeImageSize(product.imageSize))).map((url, idx) => {
+                                                const isLast = idx === getMosaicMax(normalizeImageSize(product.imageSize)) - 1;
+                                                const remaining = product.imageUrls.length - getMosaicMax(normalizeImageSize(product.imageSize));
+                                                return (
+                                                    <div key={`${url}-${idx}`} className="w-full h-full overflow-hidden bg-gray-100 relative">
+                                                        {isVideo(url) ? (
+                                                            <video src={url} className="w-full h-full object-cover" muted playsInline />
+                                                        ) : (
+                                                            <img src={url} alt={product.title} className="w-full h-full object-cover" />
+                                                        )}
+                                                        {isLast && remaining > 0 ? (
+                                                            <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center text-white text-[10px] font-bold">
+                                                                +{remaining}
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     ) : (
                                         <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                                             <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -316,8 +418,8 @@ export default function AdminPage() {
                                 {/* Actions */}
                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
                                     <button
-                                        onClick={() => handleEdit(product as any)}
-                                        className="p-4 bg-gray-50 text-gray-600 hover:bg-black hover:text-white rounded-2xl transition-all shadow-sm"
+                                        onClick={() => handleEdit(product)}
+                                        className="p-4 bg-gray-50 text-gray-600 hover:bg-gray-800 hover:text-white rounded-2xl transition-all shadow-sm"
                                         title="Edit"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>

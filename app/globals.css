@@ -17,6 +17,30 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.admin-theme h1,
+.admin-theme h2,
+.admin-theme h3,
+.admin-theme h4,
+.admin-theme h5,
+.admin-theme h6,
+.admin-theme p,
+.admin-theme span,
+.admin-theme label,
+.admin-theme a,
+.admin-theme button,
+.admin-theme li,
+.admin-theme input,
+.admin-theme textarea,
+.admin-theme select,
+.admin-theme option {
+  color: var(--admin-text-color) !important;
+}
+
+.admin-theme input::placeholder,
+.admin-theme textarea::placeholder {
+  color: color-mix(in srgb, var(--admin-text-color) 50%, transparent) !important;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

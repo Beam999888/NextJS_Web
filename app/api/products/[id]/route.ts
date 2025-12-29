@@ -4,13 +4,29 @@ import path from 'path';
 
 const dataFilePath = path.join(process.cwd(), 'data', 'products.json');
 
-function getProducts() {
+type ProductsFileData = unknown[] | { products?: unknown[] };
+
+type ProductRecord = Record<string, unknown> & { id?: number };
+
+function getProducts(): ProductRecord[] {
     if (!fs.existsSync(dataFilePath)) return [];
     const fileData = fs.readFileSync(dataFilePath, 'utf8');
-    return JSON.parse(fileData);
+    const parsed = JSON.parse(fileData) as ProductsFileData;
+    const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.products) ? parsed.products : []);
+    return list.filter((p): p is ProductRecord => !!p && typeof p === 'object');
 }
 
-function saveProducts(products: any[]) {
+function saveProducts(products: ProductRecord[]) {
+    const existing = fs.existsSync(dataFilePath)
+        ? (JSON.parse(fs.readFileSync(dataFilePath, 'utf8')) as ProductsFileData)
+        : null;
+
+    if (existing && !Array.isArray(existing)) {
+        const nextData = { ...(existing as Record<string, unknown>), products };
+        fs.writeFileSync(dataFilePath, JSON.stringify(nextData, null, 2));
+        return;
+    }
+
     fs.writeFileSync(dataFilePath, JSON.stringify(products, null, 2));
 }
 
@@ -23,7 +39,7 @@ export async function DELETE(
         const products = getProducts();
         const productId = parseInt(id);
 
-        const filteredProducts = products.filter((p: any) => p.id !== productId);
+        const filteredProducts = products.filter((p) => p.id !== productId);
 
         if (products.length === filteredProducts.length) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -42,11 +58,11 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const body = await request.json();
+        const body = (await request.json()) as Record<string, unknown>;
         const products = getProducts();
         const productId = parseInt(id);
 
-        const index = products.findIndex((p: any) => p.id === productId);
+        const index = products.findIndex((p) => p.id === productId);
         if (index === -1) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }

@@ -1,7 +1,17 @@
 {
-  "title": "Selected Works",
+  "title": "Anukun Products",
   "description": "A collection of projects exploring security vulnerabilities and defensive strategies.",
   "products": [
+    {
+      "id": 1767008978707,
+      "title": "Serene Background",
+      "description": "Player One: Tired Mode",
+      "imageUrls": [
+        "/uploads/1767008978667-4.jpg"
+      ],
+      "imageSize": "large",
+      "createdAt": "2025-12-29T11:49:38.708Z"
+    },
     {
       "id": 1766418869543,
       "title": "Facebook.com",

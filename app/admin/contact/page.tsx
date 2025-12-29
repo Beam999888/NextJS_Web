@@ -228,15 +228,15 @@ export default function AdminContactPage() {
                 </section>
 
                 {message && (
-                    <p className={`text-sm font-bold text-center ${message.includes('success') || message.includes('uploaded') ? 'text-green-600' : 'text-red-500'}`}>
+                    <div className="p-4 rounded-2xl text-center text-sm font-bold bg-gray-100 text-gray-700 border border-gray-200">
                         {message}
-                    </p>
+                    </div>
                 )}
 
                 <button
                     type="submit"
                     disabled={saving}
-                    className="w-full bg-black text-white py-4 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    className="w-full bg-gray-200 text-black py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-gray-300 transition-all disabled:opacity-50 shadow-xl border border-black/10"
                 >
                     {saving ? 'Saving...' : 'Save Changes'}
                 </button>

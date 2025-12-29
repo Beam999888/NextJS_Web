@@ -29,19 +29,12 @@
         "title": "Clean Code",
         "description": "Scalable architecture."
       }
-    },
-    {
-      "type": "split",
-      "image": "/uploads/1766465049447-9.jpg",
-      "role": "",
-      "title": "",
-      "description": ""
     }
   ],
   "role": "กอเอ๋ยกอไก่ ขอไข่ในกางเกง",
   "title": "Picture",
   "bio": "auauauauauuauauauuauuauaahahahahaha",
-  "itemsTitle": "Selected Works",
+  "itemsTitle": "Anukun Boontha",
   "itemsDescription": "A collection of projects exploring security vulnerabilities and defensive strategies.",
   "homeItems": [
     {
@@ -64,6 +57,42 @@
         "/uploads/1766465195143-ภาพหน้าจอ-(36).png",
         "/uploads/1766465195115-ภาพหน้าจอ-(283).png"
       ]
+    },
+    {
+      "id": 1766981593105,
+      "title": "Guncha",
+      "description": "simulator",
+      "imageUrls": [
+        "/uploads/1766981593061-Schedule-I-Free-Sample-2568-03-27-09-33-16.mp4"
+      ],
+      "imageSize": "small"
+    },
+    {
+      "id": 1766985466494,
+      "title": "Art bu Anukun Boontha",
+      "description": "Create by paint program.",
+      "imageUrls": [
+        "/uploads/1766985466422-8.jpg",
+        "/uploads/1766985466457-91.jpg",
+        "/uploads/1766985466446-92.jpg",
+        "/uploads/1766985466470-94.jpg",
+        "/uploads/1766985466481-95.jpg"
+      ]
+    },
+    {
+      "id": 1767008886169,
+      "title": "Cyber Security Program Faculty of Science and Technology Suan Dusit University",
+      "description": "Website system maintenance\n3D game development",
+      "imageUrls": [
+        "/uploads/1767008886089-11.jpg",
+        "/uploads/1767008886107-12.jpg",
+        "/uploads/1767008886146-13.jpg"
+      ],
+      "imageSize": "large"
     }
-  ]
+  ],
+  "background": {
+    "type": "video",
+    "url": "/uploads/1766999181935-7710243-uhd_3840_2160_30fps.mp4"
+  }
 }

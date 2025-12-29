@@ -22,7 +22,7 @@ function getProfile() {
 }
 
 // Helper to write data
-function saveProfile(data: any) {
+function saveProfile(data: unknown) {
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
 }
 

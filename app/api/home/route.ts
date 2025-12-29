@@ -12,7 +12,7 @@ function getHomeData() {
     return JSON.parse(fileData);
 }
 
-function saveHomeData(data: any) {
+function saveHomeData(data: unknown) {
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
 }
 

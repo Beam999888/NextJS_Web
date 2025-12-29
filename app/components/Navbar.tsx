@@ -19,10 +19,12 @@ export default function Navbar() {
     ];
 
     const adminLinks = [
-        { href: '/admin/home', label: 'HOME' },
-        { href: '/admin/profile', label: 'PROFILE' },
-        { href: '/admin', label: 'PRODUCT' },
-        { href: '/admin/contact', label: 'CONTACT' },
+        { href: '/admin/home', label: t.admin?.nav?.home ?? 'Home' },
+        { href: '/admin/home/slider', label: t.admin?.nav?.background ?? 'Background' },
+        { href: '/admin/profile', label: t.admin?.nav?.profile ?? 'Profile' },
+        { href: '/admin', label: t.admin?.nav?.product ?? 'Product' },
+        { href: '/admin/contact', label: t.admin?.nav?.contact ?? 'Contact' },
+        { href: '/admin/footer', label: t.admin?.nav?.footer ?? 'Footer' },
     ];
 
     return (

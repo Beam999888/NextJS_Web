@@ -1,13 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useLanguage } from "./context/LanguageContext";
-import HomeSlider from "./components/HomeSlider";
+import HomeSlider, { type Slide } from "./components/HomeSlider";
+
+type ImageSize = 'small' | 'large';
+
+const normalizeImageSize = (value: unknown): ImageSize => (value === 'large' ? 'large' : 'small');
 
 interface HomeItem {
   id: number;
   title: string;
   description: string;
   imageUrls: string[];
+  imageSize?: ImageSize;
 }
 
 function isVideo(url: string) {
@@ -16,6 +21,8 @@ function isVideo(url: string) {
 
 function HomeItemCard({ item }: { item: HomeItem }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { t } = useLanguage();
+  const imageSize = normalizeImageSize(item.imageSize);
 
   useEffect(() => {
     if (!item.imageUrls || item.imageUrls.length <= 1) return;
@@ -38,8 +45,8 @@ function HomeItemCard({ item }: { item: HomeItem }) {
   };
 
   return (
-    <div className="group cursor-pointer">
-      <div className="w-full aspect-[4/3] bg-gray-50 mb-6 relative overflow-hidden group-hover:shadow-xl transition-all duration-500 rounded-3xl">
+    <div className={`group cursor-pointer ${imageSize === 'large' ? 'md:col-span-2' : ''}`}>
+      <div className={`w-full ${imageSize === 'large' ? 'h-[360px] md:h-[560px]' : 'aspect-[4/3]'} bg-gray-50 mb-6 relative overflow-hidden group-hover:shadow-xl transition-all duration-500 rounded-3xl`}>
         {item.imageUrls && item.imageUrls.length > 0 ? (
           <>
             {item.imageUrls.map((url, index) => (
@@ -87,13 +94,13 @@ function HomeItemCard({ item }: { item: HomeItem }) {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-100 uppercase tracking-widest text-[10px] font-bold">
-            No Media
+            {t.home.noMedia}
           </div>
         )}
       </div>
-      <div className="border-b border-black/5 pb-6 group-hover:border-black/20 transition-colors">
-        <h3 className="text-2xl font-['Tenor_Sans',serif] mb-3">{item.title}</h3>
-        <p className="text-sm text-black/60 font-light leading-relaxed line-clamp-2">{item.description}</p>
+      <div className="bg-white/55 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/20">
+        <h3 className="text-2xl font-['Tenor_Sans',serif] mb-3 text-black">{item.title}</h3>
+        <p className="text-sm text-black/70 font-light leading-relaxed line-clamp-2">{item.description}</p>
       </div>
     </div>
   );
@@ -101,16 +108,21 @@ function HomeItemCard({ item }: { item: HomeItem }) {
 
 export default function Home() {
   const { t } = useLanguage();
-  const [slides, setSlides] = useState<any[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [homeItems, setHomeItems] = useState<HomeItem[]>([]);
   const [content, setContent] = useState({ role: '', title: '', bio: '', itemsTitle: '', itemsDescription: '' });
+  const [productsHeader, setProductsHeader] = useState<{ title?: string; description?: string } | null>(null);
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const res = await fetch('/api/home');
-        if (res.ok) {
-          const data = await res.json();
+        const [homeRes, productsRes] = await Promise.all([
+          fetch('/api/home'),
+          fetch('/api/products')
+        ]);
+
+        if (homeRes.ok) {
+          const data = await homeRes.json();
           setSlides(data.slides || []);
           setHomeItems(data.homeItems || []);
           setContent({
@@ -119,6 +131,14 @@ export default function Home() {
             bio: data.bio || '',
             itemsTitle: data.itemsTitle || '',
             itemsDescription: data.itemsDescription || ''
+          });
+        }
+
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          setProductsHeader({
+            title: typeof productsData?.title === 'string' ? productsData.title : undefined,
+            description: typeof productsData?.description === 'string' ? productsData.description : undefined,
           });
         }
       } catch (error) {
@@ -144,7 +164,7 @@ export default function Home() {
             {content.role || t.home.role}
           </p>
           <h1 className="text-5xl md:text-7xl lg:text-9xl font-['Tenor_Sans',serif] leading-none mb-8 text-black whitespace-pre-line">
-            {content.title || 'ANUKUN\nBOONTHA'}
+            {content.title || t.home.defaultTitle}
           </h1>
           <p className="max-w-xl text-black font-light leading-relaxed mb-12 mx-auto">
             {content.bio || t.home.bio}
@@ -163,12 +183,12 @@ export default function Home() {
         <div className="container mx-auto px-6 py-20 pb-40">
           {/* Section Header */}
           <div className="mb-20 text-center animate-fade-in-up">
-            <h2 className="text-4xl md:text-6xl font-['Tenor_Sans',serif] mb-6 text-black uppercase tracking-wider">
-              {content.itemsTitle || "Selected Works"}
+            <h2 className="text-5xl md:text-7xl lg:text-8xl font-['Tenor_Sans',serif] mb-8 text-black uppercase tracking-wider">
+              {productsHeader?.title || content.itemsTitle || t.home.selectedWorksTitle}
             </h2>
             <div className="h-0.5 w-20 bg-black/10 mx-auto mb-8"></div>
-            <p className="max-w-xl mx-auto text-black/60 font-light leading-relaxed whitespace-pre-line">
-              {content.itemsDescription || "A collection of projects exploring security vulnerabilities and defensive strategies."}
+            <p className="max-w-2xl mx-auto text-black/60 font-light leading-relaxed whitespace-pre-line text-base md:text-lg">
+              {productsHeader?.description || content.itemsDescription || t.home.selectedWorksSubtitle}
             </p>
           </div>
 

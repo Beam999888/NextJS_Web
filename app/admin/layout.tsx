@@ -1,23 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const { t, textColor, setTextColor } = useLanguage();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isChecking, setIsChecking] = useState(true);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+    const [hasLoginError, setHasLoginError] = useState(false);
+    const [isThemeOpen, setIsThemeOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        const auth = sessionStorage.getItem('admin_authenticated');
-        if (auth === 'true') {
-            setIsAuthenticated(true);
-        }
-        setIsChecking(false);
+        const timeoutId = window.setTimeout(() => {
+            try {
+                setIsAuthenticated(sessionStorage.getItem('admin_authenticated') === 'true');
+            } catch {
+                setIsAuthenticated(false);
+            }
+        }, 0);
+        return () => window.clearTimeout(timeoutId);
     }, []);
 
     const handleLogin = (e: React.FormEvent) => {
@@ -25,9 +30,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (username === 'Beam1234' && password === 'Beam1234') {
             sessionStorage.setItem('admin_authenticated', 'true');
             setIsAuthenticated(true);
-            setError('');
+            setHasLoginError(false);
         } else {
-            setError('Invalid username or password');
+            setHasLoginError(true);
         }
     };
 
@@ -37,17 +42,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/admin');
     };
 
-    if (isChecking) {
-        return (
-            <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
-            </div>
-        );
-    }
-
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="no-text-bg min-h-screen bg-[#0a0a0b] flex items-center justify-center p-6 relative overflow-hidden">
                 {/* Decorative Elements */}
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full"></div>
@@ -55,32 +52,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="w-full max-w-md animate-fade-in-up">
                     <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 md:p-12 rounded-[2.5rem] shadow-2xl relative">
                         <div className="text-center mb-10">
-                            <h1 className="text-3xl font-['Tenor_Sans',serif] text-white mb-2 tracking-tight">Admin Portal</h1>
-                            <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">Secure Access Only</p>
+                            <h1 className="text-3xl font-['Tenor_Sans',serif] text-white mb-2 tracking-tight">{t.admin?.login?.title ?? 'Admin Portal'}</h1>
+                            <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">{t.admin?.login?.subtitle ?? 'Secure Access Only'}</p>
                         </div>
 
                         <form onSubmit={handleLogin} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-1">Username</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-1">{t.admin?.login?.username ?? 'Username'}</label>
                                 <input
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-white/10"
-                                    placeholder="Enter username"
+                                    placeholder={t.admin?.login?.usernamePlaceholder ?? 'Enter username'}
                                     required
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-1">Password</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-1">{t.admin?.login?.password ?? 'Password'}</label>
                                 <div className="relative">
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-white/10"
-                                        placeholder="Enter password"
+                                        placeholder={t.admin?.login?.passwordPlaceholder ?? 'Enter password'}
                                         required
                                     />
                                     <button
@@ -97,9 +94,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </div>
                             </div>
 
-                            {error && (
+                            {hasLoginError && (
                                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-widest p-4 rounded-xl text-center">
-                                    {error}
+                                    {t.admin?.login?.invalid ?? 'Invalid username or password'}
                                 </div>
                             )}
 
@@ -107,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 type="submit"
                                 className="w-full bg-white text-black py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-200 transition-all shadow-xl active:scale-[0.98]"
                             >
-                                Authorize Access
+                                {t.admin?.login?.authorize ?? 'Authorize Access'}
                             </button>
                         </form>
                     </div>
@@ -117,8 +114,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     return (
-        <div className="relative min-h-screen">
-            {/* Minimal Logout Button - Optimized Position */}
+        <div
+            className="no-text-bg relative min-h-screen admin-theme"
+            style={{ ['--admin-text-color' as never]: textColor }}
+        >
+            <button
+                onClick={() => setIsThemeOpen((v) => !v)}
+                className="fixed bottom-10 left-10 z-[60] flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all shadow-2xl hover:scale-105 active:scale-95"
+            >
+                <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {t.admin?.theme?.textColor ?? 'Text Color'}
+            </button>
+
+            {isThemeOpen && (
+                <div className="fixed bottom-28 left-10 z-[60] w-[260px] bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">
+                            {t.admin?.theme?.textColor ?? 'Text Color'}
+                        </div>
+                        <input
+                            type="color"
+                            value={textColor}
+                            onChange={(e) => setTextColor(e.target.value)}
+                            className="h-8 w-12 rounded cursor-pointer bg-transparent"
+                        />
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setTextColor('#000000')}
+                        className="mt-3 w-full bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all"
+                    >
+                        {t.admin?.theme?.reset ?? 'Reset'}
+                    </button>
+                </div>
+            )}
+
             <button
                 onClick={handleLogout}
                 className="fixed bottom-10 right-10 z-[60] flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all shadow-2xl hover:scale-105 active:scale-95 group"
@@ -126,7 +158,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <svg className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Logout
+                {t.admin?.common?.logout ?? 'Logout'}
             </button>
             {children}
         </div>

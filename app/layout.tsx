@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import fs from "fs";
+import path from "path";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import "./globals.css";
@@ -9,28 +11,61 @@ export const metadata: Metadata = {
   description: "Cyber Security Student & Minimalist Portfolio",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+type BackgroundType = "video" | "image";
+
+function getBackground() {
+  try {
+    const dataFilePath = path.join(process.cwd(), "data", "home.json");
+    if (!fs.existsSync(dataFilePath)) return { type: "image" as const, url: "/forest.png" };
+    const fileData = fs.readFileSync(dataFilePath, "utf8");
+    const parsed = JSON.parse(fileData) as {
+      background?: { type?: BackgroundType; url?: string };
+    };
+
+    const url = typeof parsed?.background?.url === "string" ? parsed.background.url : "";
+    const type = parsed?.background?.type === "video" || parsed?.background?.type === "image" ? parsed.background.type : undefined;
+
+    if (type === "video" && url) return { type: "video" as const, url };
+    if (type === "image" && url) return { type: "image" as const, url };
+    if (!type && url) return { type: "image" as const, url };
+
+    return { type: "image" as const, url: "/forest.png" };
+  } catch {
+    return { type: "image" as const, url: "/forest.png" };
+  }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const background = getBackground();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased pt-20">
         <div className="fixed inset-0 -z-10 overflow-hidden">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            // เพิ่ม object-center เพื่อให้วิดีโออยู่ตรงกลางเสมอ
-            className="w-full h-full object-cover object-center"
-          >
-            {/* แนะนำให้ใช้ไฟล์วิดีโอในเครื่อง หรือ Direct Link ที่มีความละเอียดสูง */}
-            <source src="https://www.pexels.com/th-th/download/video/7710243/" type="video/mp4" />
-          </video>
-
-          {/* ปรับค่าความใส (Opacity) จาก 50 เป็น 20 หรือ 30 เพื่อให้วิดีโอชัดขึ้น */}
+          {background.type === "video" ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover object-center"
+              src={background.url}
+            />
+          ) : (
+            <img src={background.url} alt="" className="w-full h-full object-cover object-center" />
+          )}
           <div className="absolute inset-0 bg-black/20"></div>
         </div>
 

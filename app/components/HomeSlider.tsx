@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-interface Slide {
+export interface Slide {
     type: 'split' | 'pair';
     // For 'split' type
     image?: string;
@@ -31,6 +31,8 @@ interface HomeSliderProps {
 export default function HomeSlider({ slides }: HomeSliderProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
+    const isVideoUrl = (url: string) => url.length > 0 && /\.(mp4|webm|ogg)$/i.test(url);
+
     const nextSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, [slides.length]);
@@ -40,16 +42,16 @@ export default function HomeSlider({ slides }: HomeSliderProps) {
     };
 
     useEffect(() => {
-        if (!slides || slides.length <= 1) return;
+        if (slides.length <= 1) return;
 
         const interval = setInterval(() => {
             nextSlide();
         }, 4000); // 4 seconds auto-slide
 
         return () => clearInterval(interval);
-    }, [nextSlide, slides?.length]);
+    }, [nextSlide, slides.length]);
 
-    if (!slides || slides.length === 0) return null;
+    if (slides.length === 0) return null;
 
     return (
         <div className="relative w-full max-w-6xl mx-auto min-h-[500px] mb-12 rounded-[2.5rem] overflow-hidden group shadow-2xl bg-white/40 backdrop-blur-md border border-white/20">
@@ -64,11 +66,13 @@ export default function HomeSlider({ slides }: HomeSliderProps) {
                             /* Split Layout: Image Left, Text Right */
                             <div className="flex flex-col md:flex-row h-full">
                                 <div className="w-full md:w-1/2 h-[300px] md:h-[500px]">
-                                    <img
-                                        src={slide.image}
-                                        alt={slide.title}
-                                        className="w-full h-full object-cover"
-                                    />
+                                    {slide.image ? (
+                                        isVideoUrl(slide.image) ? (
+                                            <video src={slide.image} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                                        ) : (
+                                            <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                                        )
+                                    ) : null}
                                 </div>
                                 <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center text-left">
                                     <p className="text-xs md:text-sm font-bold uppercase tracking-[0.3em] text-black/60 mb-4 animate-fade-in">
@@ -95,11 +99,13 @@ export default function HomeSlider({ slides }: HomeSliderProps) {
                             <div className="flex flex-row h-full gap-4 p-6 md:p-10">
                                 <div className="flex-1 flex flex-col items-center justify-center p-4 bg-white/30 rounded-3xl border border-white/20 shadow-sm animate-fade-in">
                                     <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden mb-4 shadow-md">
-                                        <img
-                                            src={slide.left?.image}
-                                            alt={slide.left?.title}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {slide.left?.image ? (
+                                            isVideoUrl(slide.left?.image) ? (
+                                                <video src={slide.left?.image} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                                            ) : (
+                                                <img src={slide.left?.image} alt={slide.left?.title || ''} className="w-full h-full object-cover" />
+                                            )
+                                        ) : null}
                                     </div>
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-black/40 mb-1">{slide.left?.role}</p>
                                     <h3 className="text-lg md:text-xl font-['Tenor_Sans',serif] text-black mb-2 text-center">{slide.left?.title}</h3>
@@ -108,11 +114,13 @@ export default function HomeSlider({ slides }: HomeSliderProps) {
 
                                 <div className="flex-1 flex flex-col items-center justify-center p-4 bg-white/30 rounded-3xl border border-white/20 shadow-sm animate-fade-in delay-100">
                                     <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden mb-4 shadow-md">
-                                        <img
-                                            src={slide.right?.image}
-                                            alt={slide.right?.title}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {slide.right?.image ? (
+                                            isVideoUrl(slide.right?.image) ? (
+                                                <video src={slide.right?.image} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                                            ) : (
+                                                <img src={slide.right?.image} alt={slide.right?.title || ''} className="w-full h-full object-cover" />
+                                            )
+                                        ) : null}
                                     </div>
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-black/40 mb-1">{slide.right?.role}</p>
                                     <h3 className="text-lg md:text-xl font-['Tenor_Sans',serif] text-black mb-2 text-center">{slide.right?.title}</h3>

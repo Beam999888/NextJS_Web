@@ -215,7 +215,7 @@ export default function AdminProfilePage() {
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}
-                                className="block w-full text-[10px] text-black/40 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-black file:text-white file:cursor-pointer transition-all"
+                                className="block w-full text-[10px] text-black/40 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-gray-800 file:text-white hover:file:bg-gray-900 file:cursor-pointer transition-all"
                             />
                         </div>
                     </div>
@@ -334,8 +334,8 @@ export default function AdminProfilePage() {
                 {/* What I'm Learning */}
                 <section className="space-y-6">
                     <h2 className="text-xl font-bold border-b pb-2 flex justify-between items-center">
-                        What I'm Learning
-                        <button type="button" onClick={() => addArrayItem('learning')} className="text-xs bg-black text-white px-3 py-1 rounded">
+                        What I&apos;m Learning
+                        <button type="button" onClick={() => addArrayItem('learning')} className="text-xs bg-gray-800 hover:bg-gray-900 transition-colors text-white px-3 py-1 rounded">
                             + Add Item
                         </button>
                     </h2>
@@ -363,7 +363,7 @@ export default function AdminProfilePage() {
                 <section className="space-y-6">
                     <h2 className="text-xl font-bold border-b pb-2 flex justify-between items-center">
                         Tools I Have Used
-                        <button type="button" onClick={() => addArrayItem('tools')} className="text-xs bg-black text-white px-3 py-1 rounded">
+                        <button type="button" onClick={() => addArrayItem('tools')} className="text-xs bg-gray-800 hover:bg-gray-900 transition-colors text-white px-3 py-1 rounded">
                             + Add Tool
                         </button>
                     </h2>
@@ -388,7 +388,7 @@ export default function AdminProfilePage() {
                 </section>
 
                 {message && (
-                    <div className={`p-4 rounded-lg text-center font-bold ${message.includes('Success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <div className="p-4 rounded-2xl text-center font-bold bg-gray-100 text-gray-700 border border-gray-200">
                         {message}
                     </div>
                 )}
@@ -396,7 +396,7 @@ export default function AdminProfilePage() {
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-black text-white py-4 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    className="w-full bg-gray-200 text-black py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-gray-300 transition-all disabled:opacity-50 shadow-xl border border-black/10"
                 >
                     {submitting ? 'Saving Profile...' : 'Save All Changes'}
                 </button>

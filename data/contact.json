@@ -5,12 +5,19 @@
   "university": "Suan Dusit University",
   "location": "Bangkok, Thailand",
   "image": "/profile-contact.png",
-  "footerLogo": "/footer-logo.png",
-  "footerBg": "/footer-bg.jpg",
+  "footerLogo": "/logo.png",
+  "footerBg": "/uploads/1767014062884-12.jpg",
+  "footerOverlayOpacity": 0,
+  "footerName": "Anukun Boontha",
+  "footerRole": "",
+  "footerRights": "© 2025 All Rights Reserved.",
+  "footerDesignedBy": "Designed by Anukun",
   "socials": {
     "facebook": "https://www.facebook.com/share/19usVBmD2c/",
     "instagram": "https://www.instagram.com/o_o.beam.000?igsh=MWprbWJjZ2RtNzZmZw==",
-    "tiktok": "https://www.tiktok.com/@beam999888?_r=1&_t=ZS-91bLrYgXa5q"
+    "tiktok": "https://www.tiktok.com/@beam999888?_r=1&_t=ZS-91bLrYgXa5q",
+    "github": "https://github.com/Beam999888",
+    "linkedin": ""
   },
   "leftText": "Number : 999-999-9999\nIG : ACoda.000\nLine ID : 0989809898Baboon\n",
   "rightText": "Github : Anukun Boontha\nLinkedin : Anukun Boontha\nFacebook : Beam Anukun"

@@ -28,8 +28,24 @@ function getProductsData() {
     }
 }
 
+interface Product {
+    id: number;
+    title?: string;
+    description?: string;
+    imageUrls?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+    [key: string]: unknown;
+}
+
+interface ProductsData {
+    title: string;
+    description: string;
+    products: Product[];
+}
+
 // Helper to write data
-function saveProductsData(data: any) {
+function saveProductsData(data: unknown) {
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
 }
 
@@ -39,21 +55,22 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const data = getProductsData();
+        const body = (await request.json()) as Partial<Product> & { updateMeta?: boolean; title?: string; description?: string };
+        const data = getProductsData() as ProductsData;
 
         // Check if it's a metadata update (has title/description but not a single product structure)
         if (body.updateMeta) {
-            data.title = body.title;
-            data.description = body.description;
+            data.title = body.title || data.title;
+            data.description = body.description || data.description;
             saveProductsData(data);
             return NextResponse.json(data);
         }
 
         // Otherwise, it's a new product
-        const newProduct = {
+        const newProduct: Product = {
             id: Date.now(),
             ...body,
+            updateMeta: undefined,
             createdAt: new Date().toISOString(),
         };
 

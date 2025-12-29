@@ -1,20 +1,29 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../utils/translations';
+
+type ImageSize = 'small' | 'large';
+
+const normalizeImageSize = (value: unknown): ImageSize => (value === 'large' ? 'large' : 'small');
 
 interface Product {
   id: number;
   title: string;
   description: string;
   imageUrls: string[];
+  imageSize?: ImageSize;
 }
 
 function isVideo(url: string) {
   return url.match(/\.(mp4|webm|ogg)$/i);
 }
 
-function ProductCard({ product, t }: { product: Product, t: any }) {
+type T = (typeof translations)['en'];
+
+function ProductCard({ product, t }: { product: Product; t: T }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const imageSize = normalizeImageSize(product.imageSize);
 
   useEffect(() => {
     if (!product.imageUrls || product.imageUrls.length <= 1) return;
@@ -39,9 +48,9 @@ function ProductCard({ product, t }: { product: Product, t: any }) {
   };
 
   return (
-    <div className="group cursor-pointer">
+    <div className={`group cursor-pointer ${imageSize === 'large' ? 'md:col-span-2' : ''}`}>
       {/* Media Slider */}
-      <div className="w-full aspect-[4/3] bg-gray-50 mb-6 relative overflow-hidden group-hover:shadow-xl transition-all duration-500">
+      <div className={`w-full ${imageSize === 'large' ? 'h-[360px] md:h-[560px]' : 'aspect-[4/3]'} bg-gray-50 mb-6 relative overflow-hidden group-hover:shadow-xl transition-all duration-500 rounded-3xl`}>
         {product.imageUrls && product.imageUrls.length > 0 ? (
           <>
             {product.imageUrls.map((url, index) => (
@@ -95,18 +104,16 @@ function ProductCard({ product, t }: { product: Product, t: any }) {
       </div>
 
       {/* Info */}
-      <div className="flex justify-between items-baseline border-b border-black/5 pb-4 group-hover:border-black/30 transition-colors">
-        <div className="w-full">
-          <h3 className="text-xl font-['Tenor_Sans',serif] mb-2">{product.title}</h3>
-          <p className="text-sm text-black font-light line-clamp-2">{product.description}</p>
-        </div>
+      <div className="bg-white/55 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/20">
+        <h3 className="text-xl font-['Tenor_Sans',serif] mb-2 text-black">{product.title}</h3>
+        <p className="text-sm text-black/70 font-light line-clamp-2">{product.description}</p>
       </div>
     </div>
   );
 }
 
 export default function Products() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<{ title?: string; description?: string; products?: Product[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
