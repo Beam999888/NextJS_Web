@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -10,6 +10,57 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const { t } = useLanguage();
+    const lastHitAtRef = useRef(0);
+    const visitorIdRef = useRef('');
+
+    useEffect(() => {
+        try {
+            const existing = localStorage.getItem('visitor_id');
+            if (existing && existing.length > 0) {
+                visitorIdRef.current = existing;
+                return;
+            }
+            const nextId = typeof crypto?.randomUUID === 'function'
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            visitorIdRef.current = nextId;
+            localStorage.setItem('visitor_id', nextId);
+        } catch {
+        }
+    }, []);
+
+    useEffect(() => {
+        const now = Date.now();
+        if (now - lastHitAtRef.current < 800) return;
+        lastHitAtRef.current = now;
+        fetch('/api/visitors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorIdRef.current },
+            body: JSON.stringify({ type: 'hit' }),
+        }).catch(() => { });
+    }, [pathname]);
+
+    useEffect(() => {
+        const ping = () => {
+            fetch('/api/visitors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorIdRef.current },
+                body: JSON.stringify({ type: 'heartbeat' }),
+            }).catch(() => { });
+        };
+
+        ping();
+        const intervalId = window.setInterval(ping, 15000);
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') ping();
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        return () => {
+            window.clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+        };
+    }, []);
 
     const links = [
         { href: '/', label: t.nav.home },

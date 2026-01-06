@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import VisitorBadge from "./components/VisitorBadge";
 import "./globals.css";
 import { LanguageProvider } from "./context/LanguageContext";
 
@@ -71,6 +72,10 @@ export default function RootLayout({
 
         <LanguageProvider>
           <Navbar />
+          <div className="pointer-events-none fixed left-20 bottom-6 z-50 flex items-center gap-2">
+            <VisitorBadge variant="online" />
+            <VisitorBadge variant="total" />
+          </div>
           <main className="min-h-[calc(100vh-80px-150px)] relative z-10">
             {children}
           </main>
