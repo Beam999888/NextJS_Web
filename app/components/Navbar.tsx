@@ -29,18 +29,14 @@ export default function Navbar() {
         }
         visitorIdRef.current = visitorId;
         try {
-            const now = Date.now();
-            const lastVisitAtRaw = localStorage.getItem('visitor_last_visit_at');
-            const lastVisitAt = lastVisitAtRaw ? Number.parseInt(lastVisitAtRaw, 10) : NaN;
-            const sessionTtlMs = 30 * 60 * 1000;
-            const shouldCount = !Number.isFinite(lastVisitAt) || now - lastVisitAt > sessionTtlMs;
-            if (shouldCount && visitorId) {
+            const alreadyCounted = sessionStorage.getItem('visitor_hit_sent') === '1';
+            if (!alreadyCounted && visitorId) {
                 fetch('/api/visitors', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorId },
                     body: JSON.stringify({ type: 'hit' }),
                 }).catch(() => { });
-                localStorage.setItem('visitor_last_visit_at', String(now));
+                sessionStorage.setItem('visitor_hit_sent', '1');
             }
         } catch {
         }

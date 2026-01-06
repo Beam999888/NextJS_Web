@@ -8,15 +8,12 @@ export const dynamic = 'force-dynamic';
 type VisitorStatsFile = {
     totalViews: number;
     online?: Record<string, number>;
-    sessions?: Record<string, number>;
 };
 
 const repoDataFilePath = path.join(process.cwd(), 'data', 'stats.json');
 const tmpDir = process.env.TMPDIR || process.env.TEMP || process.env.TMP || '/tmp';
 const tmpDataFilePath = path.join(tmpDir, 'stats.json');
 const onlineTtlMs = 45_000;
-const sessionTtlMs = 30 * 60 * 1000;
-const sessionRetentionMs = 7 * 24 * 60 * 60 * 1000;
 let activeDataFilePath: string | null = null;
 let memoryData: VisitorStatsFile | null = null;
 
@@ -28,7 +25,6 @@ function normalizeData(parsed: Partial<VisitorStatsFile>): VisitorStatsFile {
     return {
         totalViews: typeof parsed.totalViews === 'number' ? parsed.totalViews : 0,
         online: parsed.online && typeof parsed.online === 'object' ? (parsed.online as Record<string, number>) : {},
-        sessions: parsed.sessions && typeof parsed.sessions === 'object' ? (parsed.sessions as Record<string, number>) : {},
     };
 }
 
@@ -89,14 +85,6 @@ function cleanOnline(online: Record<string, number>, now: number) {
     }
 }
 
-function cleanSessions(sessions: Record<string, number>, now: number) {
-    for (const [id, lastCounted] of Object.entries(sessions)) {
-        if (typeof lastCounted !== 'number' || now - lastCounted > sessionRetentionMs) {
-            delete sessions[id];
-        }
-    }
-}
-
 function getOrCreateVisitorId(req: NextRequest) {
     const fromHeader = req.headers.get('x-visitor-id');
     if (fromHeader && fromHeader.length > 0 && fromHeader.length <= 128) return fromHeader;
@@ -125,21 +113,11 @@ export async function POST(req: NextRequest) {
 
     const data = readData();
     const online = data.online ?? {};
-    const sessions = data.sessions ?? {};
     cleanOnline(online, now);
-    cleanSessions(sessions, now);
     online[visitorId] = now;
     data.online = online;
-    data.sessions = sessions;
 
-    if (type === 'hit') {
-        const lastCountedAt = sessions[visitorId];
-        const shouldCount = typeof lastCountedAt !== 'number' || now - lastCountedAt > sessionTtlMs;
-        if (shouldCount) {
-            data.totalViews = (data.totalViews ?? 0) + 1;
-            sessions[visitorId] = now;
-        }
-    }
+    if (type === 'hit') data.totalViews = (data.totalViews ?? 0) + 1;
 
     writeData(data);
 
