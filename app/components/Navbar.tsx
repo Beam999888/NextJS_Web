@@ -10,7 +10,6 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const { t } = useLanguage();
-    const lastHitAtRef = useRef(0);
     const visitorIdRef = useRef('');
 
     useEffect(() => {
@@ -27,18 +26,23 @@ export default function Navbar() {
             localStorage.setItem('visitor_id', nextId);
         } catch {
         }
+        try {
+            const now = Date.now();
+            const lastVisitAtRaw = localStorage.getItem('visitor_last_visit_at');
+            const lastVisitAt = lastVisitAtRaw ? Number.parseInt(lastVisitAtRaw, 10) : NaN;
+            const sessionTtlMs = 30 * 60 * 1000;
+            const shouldCount = !Number.isFinite(lastVisitAt) || now - lastVisitAt > sessionTtlMs;
+            if (shouldCount && visitorIdRef.current) {
+                fetch('/api/visitors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorIdRef.current },
+                    body: JSON.stringify({ type: 'hit' }),
+                }).catch(() => { });
+                localStorage.setItem('visitor_last_visit_at', String(now));
+            }
+        } catch {
+        }
     }, []);
-
-    useEffect(() => {
-        const now = Date.now();
-        if (now - lastHitAtRef.current < 800) return;
-        lastHitAtRef.current = now;
-        fetch('/api/visitors', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorIdRef.current },
-            body: JSON.stringify({ type: 'hit' }),
-        }).catch(() => { });
-    }, [pathname]);
 
     useEffect(() => {
         const ping = () => {
