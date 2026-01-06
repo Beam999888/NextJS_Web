@@ -2,34 +2,85 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 type VisitorStatsFile = {
     totalViews: number;
     online?: Record<string, number>;
 };
 
-const dataFilePath = path.join(process.cwd(), 'data', 'stats.json');
+const repoDataFilePath = path.join(process.cwd(), 'data', 'stats.json');
+const tmpDir = process.env.TMPDIR || process.env.TEMP || process.env.TMP || '/tmp';
+const tmpDataFilePath = path.join(tmpDir, 'stats.json');
 const onlineTtlMs = 45_000;
+let activeDataFilePath: string | null = null;
+let memoryData: VisitorStatsFile | null = null;
 
 function getDefaultData(): VisitorStatsFile {
     return { totalViews: 0, online: {} };
 }
 
-function readData(): VisitorStatsFile {
+function normalizeData(parsed: Partial<VisitorStatsFile>): VisitorStatsFile {
+    return {
+        totalViews: typeof parsed.totalViews === 'number' ? parsed.totalViews : 0,
+        online: parsed.online && typeof parsed.online === 'object' ? (parsed.online as Record<string, number>) : {},
+    };
+}
+
+function readFromPath(filePath: string): VisitorStatsFile | null {
     try {
-        if (!fs.existsSync(dataFilePath)) return getDefaultData();
-        const raw = fs.readFileSync(dataFilePath, 'utf8');
+        if (!fs.existsSync(filePath)) return null;
+        const raw = fs.readFileSync(filePath, 'utf8');
         const parsed = JSON.parse(raw) as Partial<VisitorStatsFile>;
-        return {
-            totalViews: typeof parsed.totalViews === 'number' ? parsed.totalViews : 0,
-            online: parsed.online && typeof parsed.online === 'object' ? (parsed.online as Record<string, number>) : {},
-        };
+        return normalizeData(parsed);
     } catch {
-        return getDefaultData();
+        return null;
     }
 }
 
+function readData(): VisitorStatsFile {
+    const activePath = activeDataFilePath;
+    if (activePath) {
+        const activeData = readFromPath(activePath);
+        if (activeData) return activeData;
+    }
+
+    const repoData = readFromPath(repoDataFilePath);
+    if (repoData) {
+        activeDataFilePath = repoDataFilePath;
+        return repoData;
+    }
+
+    const tmpData = readFromPath(tmpDataFilePath);
+    if (tmpData) {
+        activeDataFilePath = tmpDataFilePath;
+        return tmpData;
+    }
+
+    return memoryData ?? getDefaultData();
+}
+
 function writeData(data: VisitorStatsFile) {
-    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+    const payload = JSON.stringify(data, null, 2);
+    const primary = activeDataFilePath ?? repoDataFilePath;
+
+    try {
+        fs.writeFileSync(primary, payload);
+        activeDataFilePath = primary;
+        memoryData = null;
+        return;
+    } catch {
+    }
+
+    try {
+        fs.writeFileSync(tmpDataFilePath, payload);
+        activeDataFilePath = tmpDataFilePath;
+        memoryData = null;
+        return;
+    } catch {
+        memoryData = data;
+    }
 }
 
 function cleanOnline(online: Record<string, number>, now: number) {

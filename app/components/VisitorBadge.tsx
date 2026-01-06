@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 type VisitorStats = { totalViews: number; onlineCount: number };
 
 export default function VisitorBadge({ variant }: { variant: 'online' | 'total' }) {
-    const [stats, setStats] = useState<VisitorStats | null>(null);
+    const [stats, setStats] = useState<VisitorStats>({ totalViews: 0, onlineCount: 0 });
 
     useEffect(() => {
         let cancelled = false;
@@ -32,8 +32,6 @@ export default function VisitorBadge({ variant }: { variant: 'online' | 'total' 
             window.clearInterval(intervalId);
         };
     }, []);
-
-    if (!stats) return null;
 
     if (variant === 'total') {
         return (
