@@ -13,29 +13,31 @@ export default function Navbar() {
     const visitorIdRef = useRef('');
 
     useEffect(() => {
+        let visitorId = '';
         try {
             const existing = localStorage.getItem('visitor_id');
             if (existing && existing.length > 0) {
-                visitorIdRef.current = existing;
-                return;
+                visitorId = existing;
+            } else {
+                const nextId = typeof crypto?.randomUUID === 'function'
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                visitorId = nextId;
+                localStorage.setItem('visitor_id', nextId);
             }
-            const nextId = typeof crypto?.randomUUID === 'function'
-                ? crypto.randomUUID()
-                : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-            visitorIdRef.current = nextId;
-            localStorage.setItem('visitor_id', nextId);
         } catch {
         }
+        visitorIdRef.current = visitorId;
         try {
             const now = Date.now();
             const lastVisitAtRaw = localStorage.getItem('visitor_last_visit_at');
             const lastVisitAt = lastVisitAtRaw ? Number.parseInt(lastVisitAtRaw, 10) : NaN;
             const sessionTtlMs = 30 * 60 * 1000;
             const shouldCount = !Number.isFinite(lastVisitAt) || now - lastVisitAt > sessionTtlMs;
-            if (shouldCount && visitorIdRef.current) {
+            if (shouldCount && visitorId) {
                 fetch('/api/visitors', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorIdRef.current },
+                    headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorId },
                     body: JSON.stringify({ type: 'hit' }),
                 }).catch(() => { });
                 localStorage.setItem('visitor_last_visit_at', String(now));
