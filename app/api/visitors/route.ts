@@ -43,12 +43,16 @@ function readData(): VisitorStatsFile {
     const activePath = activeDataFilePath;
     if (activePath) {
         const activeData = readFromPath(activePath);
-        if (activeData) return activeData;
+        if (activeData) {
+            memoryData = activeData;
+            return activeData;
+        }
     }
 
     const tmpData = readFromPath(tmpDataFilePath);
     if (tmpData) {
         activeDataFilePath = tmpDataFilePath;
+        memoryData = tmpData;
         return tmpData;
     }
 
@@ -69,7 +73,7 @@ function writeData(data: VisitorStatsFile) {
     try {
         fs.writeFileSync(primary, payload);
         activeDataFilePath = primary;
-        memoryData = null;
+        memoryData = data;
         return;
     } catch {
     }

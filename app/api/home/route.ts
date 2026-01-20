@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         const updatedData = { ...currentData, ...body };
         saveHomeData(updatedData);
         return NextResponse.json(updatedData);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update home data' }, { status: 500 });
     }
 }

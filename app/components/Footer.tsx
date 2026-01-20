@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useLanguage } from "../context/LanguageContext";
 
 interface ContactData {
@@ -23,10 +24,14 @@ interface ContactData {
 }
 
 export default function Footer() {
+    const pathname = usePathname();
     const { t } = useLanguage();
     const [contact, setContact] = useState<ContactData | null>(null);
 
+    const isAuthPage = pathname === '/login' || pathname === '/register';
+
     useEffect(() => {
+        if (isAuthPage) return;
         const fetchContact = async () => {
             try {
                 const res = await fetch('/api/contact');
@@ -37,7 +42,7 @@ export default function Footer() {
             }
         };
         fetchContact();
-    }, []);
+    }, [isAuthPage]);
 
     const defaultFooterBg = '/forest.png';
     const defaultFooterLogo = '/logo.png';
@@ -63,7 +68,7 @@ export default function Footer() {
     const textBoxClassName = "inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-white/20";
     const textBoxSmallClassName = "inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-white/20";
 
-    return (
+    return isAuthPage ? null : (
         <footer className="relative w-full py-12 md:py-14 px-6 border-t border-gray-200 font-['Prompt',sans-serif] overflow-hidden">
             {/* Background Image Layer */}
             <div className="absolute inset-0 z-0 bg-gray-100">

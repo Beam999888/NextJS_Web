@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 type VisitorStats = { totalViews: number; onlineCount: number };
 
 export default function VisitorBadge({ variant }: { variant: 'online' | 'total' }) {
     const [stats, setStats] = useState<VisitorStats>({ totalViews: 0, onlineCount: 0 });
+    const pathname = usePathname();
+
+    const isAuthPage = pathname === '/login' || pathname === '/register';
 
     useEffect(() => {
         let cancelled = false;
@@ -16,11 +20,14 @@ export default function VisitorBadge({ variant }: { variant: 'online' | 'total' 
                 if (!res.ok) return;
                 const data = (await res.json()) as { totalViews?: number; onlineCount?: number };
                 if (cancelled) return;
-                const nextStats: VisitorStats = {
-                    totalViews: typeof data.totalViews === 'number' ? data.totalViews : 0,
-                    onlineCount: typeof data.onlineCount === 'number' ? data.onlineCount : 0,
-                };
-                setStats(nextStats);
+                setStats((prev) => {
+                    const nextTotal = typeof data.totalViews === 'number' ? data.totalViews : prev.totalViews;
+                    const nextOnline = typeof data.onlineCount === 'number' ? data.onlineCount : prev.onlineCount;
+                    return {
+                        totalViews: Math.max(prev.totalViews, nextTotal),
+                        onlineCount: nextOnline,
+                    };
+                });
             } catch {
             }
         };
@@ -34,6 +41,7 @@ export default function VisitorBadge({ variant }: { variant: 'online' | 'total' 
     }, []);
 
     if (variant === 'total') {
+        if (isAuthPage) return null;
         return (
             <div className="pointer-events-auto inline-flex items-center gap-2 rounded-2xl bg-white/20 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white backdrop-blur-sm">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -47,6 +55,7 @@ export default function VisitorBadge({ variant }: { variant: 'online' | 'total' 
         );
     }
 
+    if (isAuthPage) return null;
     return (
         <div className="pointer-events-auto inline-flex items-center gap-2 rounded-2xl bg-white/20 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white backdrop-blur-sm">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { translations } from '../utils/translations';
 
-export type LanguageCode = 'en' | 'th' | 'zh' | 'de' | 'ru';
+export type LanguageCode = 'en' | 'th' | 'zh' | 'de' | 'ru' | 'fr';
 
 export const languages: { code: LanguageCode; label: string; nativeName: string }[] = [
     { code: 'en', label: 'English', nativeName: 'English' },
@@ -11,6 +11,7 @@ export const languages: { code: LanguageCode; label: string; nativeName: string 
     { code: 'zh', label: 'Chinese', nativeName: '中文' },
     { code: 'de', label: 'German', nativeName: 'Deutsch' },
     { code: 'ru', label: 'Russian', nativeName: 'Русский' },
+    { code: 'fr', label: 'French', nativeName: 'Français' },
 ];
 
 interface LanguageContextType {

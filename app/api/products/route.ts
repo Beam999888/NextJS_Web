@@ -23,7 +23,7 @@ function getProductsData() {
             return { ...FALLBACK_DATA, products: parsed };
         }
         return parsed;
-    } catch (e) {
+    } catch {
         return FALLBACK_DATA;
     }
 }
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         saveProductsData(data);
 
         return NextResponse.json(newProduct, { status: 201 });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to save product/metadata' }, { status: 500 });
     }
 }

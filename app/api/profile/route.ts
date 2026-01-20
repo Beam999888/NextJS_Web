@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         saveProfile(updatedProfile);
 
         return NextResponse.json(updatedProfile);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
     }
 }

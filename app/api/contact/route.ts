@@ -35,7 +35,7 @@ export async function GET() {
         const mergedSocials = { ...(defaults.socials || {}), ...((parsed?.socials as Record<string, unknown>) || {}) };
         merged.socials = mergedSocials;
         return NextResponse.json(merged);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch contact data' }, { status: 500 });
     }
 }
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
         fs.writeFileSync(filePath, JSON.stringify(merged, null, 2));
         return NextResponse.json(merged);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update contact data' }, { status: 500 });
     }
 }

@@ -1,16 +1,20 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar() {
     const pathname = usePathname();
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
+    const [isSiteAuthenticated, setIsSiteAuthenticated] = useState<boolean | null>(null);
     const { t } = useLanguage();
     const visitorIdRef = useRef('');
+
+    const isAuthPage = pathname === '/login' || pathname === '/register';
 
     useEffect(() => {
         let visitorId = '';
@@ -29,14 +33,12 @@ export default function Navbar() {
         }
         visitorIdRef.current = visitorId;
         try {
-            const alreadyCounted = sessionStorage.getItem('visitor_hit_sent') === '1';
-            if (!alreadyCounted && visitorId) {
+            if (visitorId) {
                 fetch('/api/visitors', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-visitor-id': visitorId },
                     body: JSON.stringify({ type: 'hit' }),
                 }).catch(() => { });
-                sessionStorage.setItem('visitor_hit_sent', '1');
             }
         } catch {
         }
@@ -64,6 +66,35 @@ export default function Navbar() {
         };
     }, []);
 
+    useEffect(() => {
+        if (pathname.startsWith('/admin')) return;
+        if (pathname === '/login' || pathname === '/register') return;
+
+        const controller = new AbortController();
+        fetch('/api/auth/me', { signal: controller.signal })
+            .then((res) => res.json())
+            .then((data: unknown) => {
+                const authenticated =
+                    !!data &&
+                    typeof data === 'object' &&
+                    (data as { authenticated?: unknown }).authenticated === true;
+                setIsSiteAuthenticated(authenticated);
+            })
+            .catch(() => setIsSiteAuthenticated(false));
+
+        return () => controller.abort();
+    }, [pathname]);
+
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch {
+        }
+        setIsSiteAuthenticated(false);
+        router.push('/login');
+        router.refresh();
+    };
+
     const links = [
         { href: '/', label: t.nav.home },
         { href: '/profile', label: t.nav.profile },
@@ -80,7 +111,9 @@ export default function Navbar() {
         { href: '/admin/footer', label: t.admin?.nav?.footer ?? 'Footer' },
     ];
 
-    return (
+    const showAuthControls = !pathname.startsWith('/admin') && pathname !== '/login' && pathname !== '/register';
+
+    return isAuthPage ? null : (
         <nav className="fixed top-0 w-full z-50 bg-transparent border-none">
             <div className="container mx-auto px-6 h-20 flex items-center justify-between">
 
@@ -131,8 +164,26 @@ export default function Navbar() {
 
                     {/* Language Switcher (Desktop & Mobile - placed here to be always visible or just desktop? User said top right) */}
                     {/* Let's put it here so it's on the right */}
-                    <div className="hidden md:block border-l pl-8 border-white/20">
+                    <div className="hidden md:flex items-center gap-6 border-l pl-8 border-white/20">
                         <LanguageSwitcher />
+                        {showAuthControls && isSiteAuthenticated !== null ? (
+                            isSiteAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="text-xs font-bold uppercase tracking-[0.2em] text-white hover:opacity-70 transition-opacity"
+                                >
+                                    {t.auth.logout}
+                                </button>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="text-xs font-bold uppercase tracking-[0.2em] text-white hover:opacity-70 transition-opacity"
+                                >
+                                    {t.auth.login}
+                                </Link>
+                            )
+                        ) : null}
                     </div>
                 </div>
 
@@ -176,6 +227,29 @@ export default function Navbar() {
                                 ))}
                             </div>
                         </div>
+
+                        {showAuthControls && isSiteAuthenticated !== null ? (
+                            isSiteAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        void handleLogout();
+                                    }}
+                                    className="mt-2 text-sm font-bold uppercase tracking-[0.2em] text-black"
+                                >
+                                    {t.auth.logout}
+                                </button>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className="mt-2 text-sm font-bold uppercase tracking-[0.2em] text-black"
+                                >
+                                    {t.auth.login}
+                                </Link>
+                            )
+                        ) : null}
                     </div>
                 )}
             </div>

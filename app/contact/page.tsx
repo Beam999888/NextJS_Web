@@ -8,6 +8,10 @@ interface ContactData {
     email?: string;
     university?: string;
     location?: string;
+    addressProvince?: string;
+    addressAmphoe?: string;
+    addressTambon?: string;
+    addressZip?: string;
     image?: string;
     leftText?: string;
     rightText?: string;
@@ -36,6 +40,11 @@ export default function Contact() {
     }, []);
 
     if (!contact) return <div className="p-20 text-center">{t.contact.loading ?? 'Loading...'}</div>;
+
+    const locationDisplay =
+        (contact.addressTambon || contact.addressAmphoe || contact.addressProvince || contact.addressZip)
+            ? `${contact.addressTambon ?? ''}${contact.addressTambon ? ', ' : ''}${contact.addressAmphoe ?? ''}${contact.addressAmphoe ? ', ' : ''}${contact.addressProvince ?? ''} ${contact.addressZip ?? ''}`.trim()
+            : (contact.location || '');
 
     return (
         <>
@@ -73,7 +82,7 @@ export default function Contact() {
                                 <div>
                                     <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 text-black opacity-40">{t.contact.locationLabel}</h3>
                                     <p className="text-base text-black font-bold leading-relaxed">
-                                        {contact.location}
+                                        {locationDisplay}
                                     </p>
                                 </div>
 

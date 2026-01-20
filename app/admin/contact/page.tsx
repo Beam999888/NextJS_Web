@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 interface ContactData {
     title: string;
@@ -19,6 +18,10 @@ interface ContactData {
         instagram: string;
         tiktok: string;
     };
+    addressProvince?: string;
+    addressAmphoe?: string;
+    addressTambon?: string;
+    addressZip?: string;
 }
 
 export default function AdminContactPage() {
@@ -33,11 +36,21 @@ export default function AdminContactPage() {
         footerBg: '',
         leftText: '',
         rightText: '',
-        socials: { facebook: '', instagram: '', tiktok: '' }
+        socials: { facebook: '', instagram: '', tiktok: '' },
+        addressProvince: '',
+        addressAmphoe: '',
+        addressTambon: '',
+        addressZip: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
+    const [db, setDb] = useState<Array<{ province: string; amphoe: string; district: string; zipcode: string }>>([]);
+    const [provinces, setProvinces] = useState<string[]>([]);
+    const [amphoes, setAmphoes] = useState<string[]>([]);
+    const [tambons, setTambons] = useState<Array<{ name: string; zip: string }>>([]);
+    const [isDbReady, setIsDbReady] = useState(false);
+    const [hasMysql, setHasMysql] = useState(false);
 
     useEffect(() => {
         const fetchContact = async () => {
@@ -54,6 +67,48 @@ export default function AdminContactPage() {
         fetchContact();
     }, []);
 
+    useEffect(() => {
+        const loadDb = async () => {
+            try {
+                const res = await fetch('/api/addressdb');
+                if (!res.ok) throw new Error('addressdb_failed');
+                const data = (await res.json()) as unknown;
+                if (!Array.isArray(data)) throw new Error('invalid_addressdb');
+                setDb(data as Array<{ province: string; amphoe: string; district: string; zipcode: string }>);
+                setIsDbReady(true);
+                setMessage('');
+            } catch {
+                setMessage('ไม่สามารถโหลดฐานข้อมูลจังหวัด/อำเภอ/ตำบลได้');
+                setIsDbReady(false);
+            }
+        };
+        loadDb();
+    }, []);
+
+    useEffect(() => {
+        const loadProvinces = async () => {
+            try {
+                const res1 = await fetch('/api/address/provinces');
+                if (res1.ok) {
+                    const pv1 = (await res1.json()) as unknown;
+                    if (Array.isArray(pv1)) {
+                        setProvinces(pv1 as string[]);
+                        setHasMysql(true);
+                        return;
+                    }
+                }
+            } catch {}
+            try {
+                const res2 = await fetch('/api/provinces');
+                if (res2.ok) {
+                    const pv2 = (await res2.json()) as string[];
+                    setProvinces(Array.isArray(pv2) ? pv2 : []);
+                }
+            } catch {}
+        };
+        loadProvinces();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (name.startsWith('social_')) {
@@ -65,6 +120,105 @@ export default function AdminContactPage() {
         } else {
             setContact(prev => ({ ...prev, [name]: value }));
         }
+    };
+
+    const handleProvinceChange = async (value: string) => {
+        setTambons([]);
+        setAmphoes([]);
+        if (hasMysql) {
+            try {
+                const res = await fetch(`/api/address/amphoes?province=${encodeURIComponent(value)}`);
+                if (res.ok) {
+                    const list = (await res.json()) as string[];
+                    if (Array.isArray(list) && list.length > 0) {
+                        setAmphoes(list);
+                    } else if (isDbReady) {
+                        const filteredAmphoes = Array.from(new Set(db.filter((r) => r.province === value).map((r) => r.amphoe))).sort((a, b) => a.localeCompare(b, 'th'));
+                        setAmphoes(filteredAmphoes);
+                    } else {
+                        setAmphoes([]);
+                    }
+                }
+            } catch {
+                setAmphoes([]);
+            }
+        } else if (isDbReady) {
+            const filteredAmphoes = Array.from(new Set(db.filter((r) => r.province === value).map((r) => r.amphoe))).sort((a, b) => a.localeCompare(b, 'th'));
+            setAmphoes(filteredAmphoes);
+        } else {
+            try {
+                const res = await fetch(`/api/amphoes?province=${encodeURIComponent(value)}`);
+                const list = (await res.json()) as string[];
+                setAmphoes(Array.isArray(list) ? list : []);
+            } catch {
+                setAmphoes([]);
+            }
+        }
+        setContact((prev) => ({
+            ...prev,
+            addressProvince: value,
+            addressAmphoe: '',
+            addressTambon: '',
+            addressZip: ''
+        }));
+    };
+
+    const handleAmphoeChange = async (value: string) => {
+        setTambons([]);
+        if (hasMysql) {
+            try {
+                const url = `/api/address/tambons?province=${encodeURIComponent(contact.addressProvince || '')}&amphoe=${encodeURIComponent(value)}`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const list = (await res.json()) as Array<{ name: string; zip: string }>;
+                    if (Array.isArray(list) && list.length > 0) {
+                        setTambons(list);
+                    } else if (isDbReady) {
+                        const filtered = db.filter((r) => r.province === (contact.addressProvince || '') && r.amphoe === value);
+                        const uniqueNames = Array.from(new Set(filtered.map((r) => r.district))).sort((a, b) => a.localeCompare(b, 'th'));
+                        const combined = uniqueNames.map((n) => {
+                            const row = filtered.find((r) => r.district === n);
+                            return { name: n, zip: row?.zipcode || '' };
+                        });
+                        setTambons(combined);
+                    } else {
+                        setTambons([]);
+                    }
+                }
+            } catch {
+                setTambons([]);
+            }
+        } else if (isDbReady) {
+            const filtered = db.filter((r) => r.province === (contact.addressProvince || '') && r.amphoe === value);
+            const uniqueNames = Array.from(new Set(filtered.map((r) => r.district))).sort((a, b) => a.localeCompare(b, 'th'));
+            const combined = uniqueNames.map((n) => {
+                const row = filtered.find((r) => r.district === n);
+                return { name: n, zip: row?.zipcode || '' };
+            });
+            setTambons(combined);
+        } else {
+            setTambons([]);
+        }
+        setContact((prev) => ({
+            ...prev,
+            addressAmphoe: value,
+            addressTambon: '',
+            addressZip: ''
+        }));
+    };
+
+    const handleTambonChange = (value: string) => {
+        const match = tambons.find((t) => t.name === value);
+        const zip = match?.zip ?? (contact.addressZip || '');
+        const locationStr = value && contact.addressAmphoe && contact.addressProvince
+            ? `${value}, ${contact.addressAmphoe}, ${contact.addressProvince} ${zip}`
+            : contact.location;
+        setContact((prev) => ({
+            ...prev,
+            addressTambon: value,
+            addressZip: zip,
+            location: locationStr,
+        }));
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +234,7 @@ export default function AdminContactPage() {
             const data = await res.json();
             setContact(prev => ({ ...prev, image: data.url }));
             setMessage('Image uploaded!');
-        } catch (error) {
+        } catch {
             setMessage('Failed to upload image.');
         }
     };
@@ -101,7 +255,7 @@ export default function AdminContactPage() {
             } else {
                 setMessage('Failed to update contact.');
             }
-        } catch (error) {
+        } catch {
             setMessage('Error saving data.');
         } finally {
             setSaving(false);
@@ -140,10 +294,6 @@ export default function AdminContactPage() {
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider">University</label>
                             <input name="university" value={contact.university} onChange={handleChange} className="w-full border p-2 rounded bg-white" />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider">Location</label>
-                            <input name="location" value={contact.location} onChange={handleChange} className="w-full border p-2 rounded bg-white" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider">Profile Image</label>
@@ -227,11 +377,83 @@ export default function AdminContactPage() {
                     </div>
                 </section>
 
-                {message && (
-                    <div className="p-4 rounded-2xl text-center text-sm font-bold bg-gray-100 text-gray-700 border border-gray-200">
-                        {message}
+                <section className="space-y-6">
+                    <h2 className="text-xl font-bold border-b pb-2">ข้อมูลที่อยู่</h2>
+                    <div className="grid md:grid-cols-4 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider">จังหวัด</label>
+                            <select
+                                value={contact.addressProvince || ''}
+                                onChange={(e) => handleProvinceChange(e.target.value)}
+                                className="w-full border p-2 rounded bg-white"
+                            >
+                                <option value="">-- เลือกจังหวัด --</option>
+                                {provinces.map((p) => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider">อำเภอ/เขต</label>
+                            {(hasMysql || isDbReady || amphoes.length > 0) ? (
+                                <select
+                                    value={contact.addressAmphoe || ''}
+                                    onChange={(e) => handleAmphoeChange(e.target.value)}
+                                    className="w-full border p-2 rounded bg-white"
+                                    disabled={!contact.addressProvince}
+                                >
+                                    <option value="">-- เลือกอำเภอ/เขต --</option>
+                                    {amphoes.map((a) => (
+                                        <option key={a} value={a}>{a}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    name="addressAmphoe"
+                                    value={contact.addressAmphoe || ''}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded bg-white"
+                                    placeholder="กรอกอำเภอ/เขต"
+                                />
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider">ตำบล/แขวง</label>
+                            {(hasMysql || isDbReady) ? (
+                                <select
+                                    value={contact.addressTambon || ''}
+                                    onChange={(e) => handleTambonChange(e.target.value)}
+                                    className="w-full border p-2 rounded bg-white"
+                                    disabled={!contact.addressAmphoe}
+                                >
+                                    <option value="">-- เลือกตำบล/แขวง --</option>
+                                    {tambons.map((t) => (
+                                        <option key={t.name} value={t.name}>{t.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    name="addressTambon"
+                                    value={contact.addressTambon || ''}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded bg-white"
+                                    placeholder="กรอกตำบล/แขวง"
+                                />
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider">รหัสไปรษณีย์</label>
+                            <input name="addressZip" value={contact.addressZip || ''} onChange={handleChange} className="w-full border p-2 rounded bg-white" readOnly={hasMysql || isDbReady} />
+                        </div>
                     </div>
-                )}
+                    {message && (
+                        <div className="p-4 rounded-2xl text-center text-sm font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                            {message}
+                        </div>
+                    )}
+                </section>
+
+                
 
                 <button
                     type="submit"

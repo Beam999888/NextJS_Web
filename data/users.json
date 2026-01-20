@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "id": "2230641d-abb7-4a0e-8770-d28ef9ee1a57",
+      "email": "beamanukun2549@gmail.com",
+      "name": "Beam Anukun",
+      "createdAt": "2026-01-20T13:37:30.368Z",
+      "provider": "facebook",
+      "providerSub": "1183743533939332"
+    },
+    {
+      "id": "57660bc9-67d8-415f-9417-5da4c27f14fd",
+      "email": "linkedin@example.com",
+      "name": "LinkedIn User",
+      "createdAt": "2026-01-20T13:37:19.071Z",
+      "provider": "linkedin",
+      "providerSub": "demo-linkedin-sub"
+    },
+    {
+      "id": "b9ddf9e6-6e4c-4282-8ba2-1e206cbb8d0e",
+      "email": "github@example.com",
+      "name": "GitHub User",
+      "createdAt": "2026-01-20T13:37:14.219Z",
+      "provider": "github",
+      "providerSub": "123456"
+    },
+    {
+      "id": "9493869c-e773-4ef2-93ef-9e2f51e3e19e",
+      "email": "facebook@example.com",
+      "name": "Facebook User",
+      "createdAt": "2026-01-20T13:12:45.849Z",
+      "provider": "facebook",
+      "providerSub": "demo-facebook-sub"
+    },
+    {
+      "id": "dcadb313-4550-40b2-bf5f-46fc40466496",
+      "email": "google@example.com",
+      "name": "Google User",
+      "createdAt": "2026-01-20T13:12:36.578Z",
+      "provider": "google",
+      "providerSub": "demo-google-sub"
+    },
+    {
+      "id": "a4dc6301-b50f-47b1-a290-aba229ea2f21",
+      "email": "thaiid@example.com",
+      "name": "ThaiID User",
+      "createdAt": "2026-01-20T06:29:34.863Z",
+      "provider": "thaiid",
+      "providerSub": "demo-sub"
+    },
+    {
+      "id": "0d5d5360-e10e-4419-87be-d4c722de0cbf",
+      "email": "anukun25499@gmail.com",
+      "name": "Beam",
+      "password": {
+        "salt": "53b04fdf5b51efb09ce48c3d01c20bc0",
+        "iterations": 100000,
+        "digest": "sha256",
+        "hash": "f5e4377e547f93e3082cb48d171ce25d29d01b9924e2c1d60284bf6886f687d9"
+      },
+      "createdAt": "2026-01-20T06:06:09.309Z"
+    }
+  ]
+}

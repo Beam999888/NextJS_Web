@@ -3,7 +3,7 @@
   "intro": "I'm Anukun Boontha. Feel free to reach out for collaborations or just a friendly hello.",
   "email": "anukun25499@gmail.com ",
   "university": "Suan Dusit University",
-  "location": "Bangkok, Thailand",
+  "location": "ดุสิต, เขตดุสิต, กรุงเทพมหานคร 10300",
   "image": "/profile-contact.png",
   "footerLogo": "/logo.png",
   "footerBg": "/uploads/1767014062884-12.jpg",
@@ -20,5 +20,9 @@
     "linkedin": ""
   },
   "leftText": "Number : 999-999-9999\nIG : ACoda.000\nLine ID : 0989809898Baboon\n",
-  "rightText": "Github : Anukun Boontha\nLinkedin : Anukun Boontha\nFacebook : Beam Anukun"
+  "rightText": "Github : Anukun Boontha\nLinkedin : Anukun Boontha\nFacebook : Beam Anukun",
+  "addressProvince": "กรุงเทพมหานคร",
+  "addressAmphoe": "เขตดุสิต",
+  "addressTambon": "ดุสิต",
+  "addressZip": "10300"
 }

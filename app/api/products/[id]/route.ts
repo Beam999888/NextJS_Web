@@ -47,7 +47,7 @@ export async function DELETE(
 
         saveProducts(filteredProducts);
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
     }
 }
@@ -77,7 +77,7 @@ export async function PATCH(
 
         saveProducts(products);
         return NextResponse.json(products[index]);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
     }
 }

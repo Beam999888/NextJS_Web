@@ -8,6 +8,39 @@ export type TranslationKeys = {
         contact: string;
         admin: string;
     };
+    auth: {
+        loginTitle: string;
+        loginSubtitle: string;
+        registerTitle: string;
+        registerSubtitle: string;
+        loginWithThaiID: string;
+        loginWithGoogle: string;
+        loginWithFacebook: string;
+        loginWithGitHub: string;
+        loginWithLinkedIn: string;
+        openThaiIDApp: string;
+        orScanQRCode: string;
+        thaiID: string;
+        name: string;
+        namePlaceholder: string;
+        email: string;
+        emailPlaceholder: string;
+        password: string;
+        passwordPlaceholder: string;
+        confirmPassword: string;
+        confirmPasswordPlaceholder: string;
+        login: string;
+        register: string;
+        logout: string;
+        needAccount: string;
+        haveAccount: string;
+        invalidCredentials: string;
+        userExists: string;
+        passwordMismatch: string;
+        genericError: string;
+        switchToThai: string;
+        switchToEnglish: string;
+    };
     common: {
         loading: string;
         save: string;
@@ -105,6 +138,39 @@ export type TranslationKeys = {
 export const translations: Record<LanguageCode, TranslationKeys> = {
     en: {
         nav: { home: 'Home', profile: 'Profile', products: 'Products', contact: 'Contact', admin: 'Admin' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: 'Create Account',
+            registerSubtitle: 'Sign up to continue',
+            loginWithThaiID: 'Login with ThaiID',
+            loginWithGoogle: 'Login with Google',
+            loginWithFacebook: 'Login with Facebook',
+            loginWithGitHub: 'Login with GitHub',
+            loginWithLinkedIn: 'Login with LinkedIn',
+            openThaiIDApp: 'Open ThaiID app',
+            orScanQRCode: 'or scan this QR code',
+            thaiID: 'ThaiID',
+            name: 'Name',
+            namePlaceholder: 'Enter your name',
+            email: 'Email',
+            emailPlaceholder: 'Enter your email',
+            password: 'Password',
+            passwordPlaceholder: 'Enter your password',
+            confirmPassword: 'Confirm Password',
+            confirmPasswordPlaceholder: 'Confirm your password',
+            login: 'Login',
+            register: 'Register',
+            logout: 'Logout',
+            needAccount: "Don't have an account?",
+            haveAccount: 'Already have an account?',
+            invalidCredentials: 'Invalid email or password',
+            userExists: 'This email is already registered',
+            passwordMismatch: 'Passwords do not match',
+            genericError: 'Something went wrong. Please try again.',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
         common: { loading: 'Loading...', save: 'Save' },
         home: {
             role: 'Cyber Security Student',
@@ -165,6 +231,39 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
     },
     th: {
         nav: { home: 'หน้าแรก', profile: 'ประวัติ', products: 'ผลงาน', contact: 'ติดต่อ', admin: 'ผู้ดูแล' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: 'สร้างบัญชีผู้ใช้',
+            registerSubtitle: 'สมัครสมาชิกเพื่อใช้งานต่อ',
+            loginWithThaiID: 'เข้าสู่ระบบด้วย ThaiID',
+            loginWithGoogle: 'เข้าสู่ระบบด้วย Google',
+            loginWithFacebook: 'เข้าสู่ระบบด้วย Facebook',
+            loginWithGitHub: 'เข้าสู่ระบบด้วย GitHub',
+            loginWithLinkedIn: 'เข้าสู่ระบบด้วย LinkedIn',
+            openThaiIDApp: 'เปิดแอป ThaiID',
+            orScanQRCode: 'หรือสแกน QR โค้ดนี้',
+            thaiID: 'ThaiID',
+            name: 'ชื่อ',
+            namePlaceholder: 'กรอกชื่อของคุณ',
+            email: 'อีเมล',
+            emailPlaceholder: 'กรอกอีเมลของคุณ',
+            password: 'รหัสผ่าน',
+            passwordPlaceholder: 'กรอกรหัสผ่าน',
+            confirmPassword: 'ยืนยันรหัสผ่าน',
+            confirmPasswordPlaceholder: 'กรอกรหัสผ่านอีกครั้ง',
+            login: 'เข้าสู่ระบบ',
+            register: 'สมัครสมาชิก',
+            logout: 'ออกจากระบบ',
+            needAccount: 'ยังไม่มีบัญชีใช่ไหม?',
+            haveAccount: 'มีบัญชีอยู่แล้ว?',
+            invalidCredentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+            userExists: 'อีเมลนี้ถูกใช้งานแล้ว',
+            passwordMismatch: 'รหัสผ่านไม่ตรงกัน',
+            genericError: 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
         common: { loading: 'กำลังโหลด...', save: 'บันทึก' },
         home: {
             role: 'นักศึกษาความปลอดภัยไซเบอร์',
@@ -225,6 +324,39 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
     },
     zh: {
         nav: { home: '主页', profile: '个人资料', products: '作品', contact: '联系', admin: '管理' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: '创建账号',
+            registerSubtitle: '注册以继续',
+            loginWithThaiID: '使用 ThaiID 登录',
+            loginWithGoogle: '使用 Google 登录',
+            loginWithFacebook: '使用 Facebook 登录',
+            loginWithGitHub: '使用 GitHub 登录',
+            loginWithLinkedIn: '使用 LinkedIn 登录',
+            openThaiIDApp: '打开 ThaiID 应用',
+            orScanQRCode: '或扫描此二维码',
+            thaiID: 'ThaiID',
+            name: '姓名',
+            namePlaceholder: '输入姓名',
+            email: '邮箱',
+            emailPlaceholder: '输入邮箱',
+            password: '密码',
+            passwordPlaceholder: '输入密码',
+            confirmPassword: '确认密码',
+            confirmPasswordPlaceholder: '再次输入密码',
+            login: '登录',
+            register: '注册',
+            logout: '退出登录',
+            needAccount: '还没有账号？',
+            haveAccount: '已有账号？',
+            invalidCredentials: '邮箱或密码错误',
+            userExists: '该邮箱已注册',
+            passwordMismatch: '两次密码不一致',
+            genericError: '发生错误，请重试。',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
         common: { loading: '加载中...', save: '保存' },
         home: {
             role: '网络安全学生',
@@ -285,6 +417,39 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
     },
     de: {
         nav: { home: 'Start', profile: 'Profil', products: 'Projekte', contact: 'Kontakt', admin: 'Admin' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: 'Konto erstellen',
+            registerSubtitle: 'Registriere dich, um fortzufahren',
+            loginWithThaiID: 'Mit ThaiID anmelden',
+            loginWithGoogle: 'Mit Google anmelden',
+            loginWithFacebook: 'Mit Facebook anmelden',
+            loginWithGitHub: 'Mit GitHub anmelden',
+            loginWithLinkedIn: 'Mit LinkedIn anmelden',
+            openThaiIDApp: 'ThaiID App öffnen',
+            orScanQRCode: 'oder diesen QR-Code scannen',
+            thaiID: 'ThaiID',
+            name: 'Name',
+            namePlaceholder: 'Name eingeben',
+            email: 'E-Mail',
+            emailPlaceholder: 'E-Mail eingeben',
+            password: 'Passwort',
+            passwordPlaceholder: 'Passwort eingeben',
+            confirmPassword: 'Passwort bestätigen',
+            confirmPasswordPlaceholder: 'Passwort erneut eingeben',
+            login: 'Anmelden',
+            register: 'Registrieren',
+            logout: 'Abmelden',
+            needAccount: 'Noch kein Konto?',
+            haveAccount: 'Schon ein Konto?',
+            invalidCredentials: 'E-Mail oder Passwort ungültig',
+            userExists: 'Diese E-Mail ist bereits registriert',
+            passwordMismatch: 'Passwörter stimmen nicht überein',
+            genericError: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
         common: { loading: 'Laden...', save: 'Speichern' },
         home: {
             role: 'Cyber-Security Student',
@@ -346,6 +511,39 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
     },
     ru: {
         nav: { home: 'Главная', profile: 'Профиль', products: 'Проекты', contact: 'Контакты', admin: 'Админ' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: 'Создать аккаунт',
+            registerSubtitle: 'Зарегистрируйтесь, чтобы продолжить',
+            loginWithThaiID: 'Войти через ThaiID',
+            loginWithGoogle: 'Войти через Google',
+            loginWithFacebook: 'Войти через Facebook',
+            loginWithGitHub: 'Войти через GitHub',
+            loginWithLinkedIn: 'Войти через LinkedIn',
+            openThaiIDApp: 'Открыть приложение ThaiID',
+            orScanQRCode: 'или отсканируйте этот QR-код',
+            thaiID: 'ThaiID',
+            name: 'Имя',
+            namePlaceholder: 'Введите имя',
+            email: 'Email',
+            emailPlaceholder: 'Введите email',
+            password: 'Пароль',
+            passwordPlaceholder: 'Введите пароль',
+            confirmPassword: 'Подтвердите пароль',
+            confirmPasswordPlaceholder: 'Повторите пароль',
+            login: 'Войти',
+            register: 'Регистрация',
+            logout: 'Выйти',
+            needAccount: 'Нет аккаунта?',
+            haveAccount: 'Уже есть аккаунт?',
+            invalidCredentials: 'Неверный email или пароль',
+            userExists: 'Этот email уже зарегистрирован',
+            passwordMismatch: 'Пароли не совпадают',
+            genericError: 'Произошла ошибка. Попробуйте снова.',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
         common: { loading: 'Загрузка...', save: 'Сохранить' },
         home: {
             role: 'Студент кибербезопасности',
@@ -401,6 +599,100 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
                 image: 'Изображение',
                 upload: 'Загрузка (макс. 50MB)',
                 noneSelected: 'Фон не выбран'
+            }
+        }
+    },
+    fr: {
+        nav: { home: 'Accueil', profile: 'Profil', products: 'Projets', contact: 'Contact', admin: 'Admin' },
+        auth: {
+            loginTitle: 'Welcome to the WEB',
+            loginSubtitle: '',
+            registerTitle: 'Créer un compte',
+            registerSubtitle: 'Inscrivez-vous pour continuer',
+            loginWithThaiID: 'Se connecter avec ThaiID',
+            loginWithGoogle: 'Se connecter avec Google',
+            loginWithFacebook: 'Se connecter avec Facebook',
+            loginWithGitHub: 'Se connecter avec GitHub',
+            loginWithLinkedIn: 'Se connecter avec LinkedIn',
+            openThaiIDApp: 'Ouvrir l’application ThaiID',
+            orScanQRCode: 'ou scannez ce QR code',
+            thaiID: 'ThaiID',
+            name: 'Nom',
+            namePlaceholder: 'Entrez votre nom',
+            email: 'Email',
+            emailPlaceholder: 'Entrez votre email',
+            password: 'Mot de passe',
+            passwordPlaceholder: 'Entrez votre mot de passe',
+            confirmPassword: 'Confirmer le mot de passe',
+            confirmPasswordPlaceholder: 'Confirmez votre mot de passe',
+            login: 'Se connecter',
+            register: 'S’inscrire',
+            logout: 'Se déconnecter',
+            needAccount: 'Pas de compte ?',
+            haveAccount: 'Vous avez déjà un compte ?',
+            invalidCredentials: 'Email ou mot de passe invalide',
+            userExists: 'Cet email est déjà enregistré',
+            passwordMismatch: 'Les mots de passe ne correspondent pas',
+            genericError: 'Une erreur s’est produite. Veuillez réessayer.',
+            switchToThai: 'ไทย',
+            switchToEnglish: 'English',
+        },
+        common: { loading: 'Chargement...', save: 'Enregistrer' },
+        home: {
+            role: 'Étudiant en cybersécurité',
+            bio: 'À l’Université Suan Dusit. Passionné par la protection des environnements numériques et la création de systèmes sûrs et résilients.',
+            discover: 'Découvrir plus',
+            noMedia: 'Aucun média',
+            defaultTitle: 'ANUKUN\nBOONTHA',
+            selectedWorksTitle: 'Travaux sélectionnés',
+            selectedWorksSubtitle: 'Une collection de projets explorant les vulnérabilités et les stratégies de défense.'
+        },
+        footer: { role: 'Étudiant en cybersécurité', rights: 'Tous droits réservés.', designedBy: 'Conçu par Anukun' },
+        profile: {
+            title: 'Profil', portrait: 'Portrait', contact: 'Contact', education: 'Éducation',
+            learning: 'Ce que j’apprends', tools: 'Outils utilisés', languages: 'Langues',
+            thai: 'Thaï', native: 'Langue maternelle', english: 'Anglais', intermediate: 'Intermédiaire',
+            loading: 'Chargement...',
+            instagram: 'Instagram',
+            facebook: 'Facebook',
+            tiktok: 'TikTok'
+        },
+        products: {
+            title: 'Travaux sélectionnés',
+            subtitle: 'Une collection de projets explorant les vulnérabilités et les stratégies de défense.',
+            loading: 'Chargement des projets...', empty: 'Aucun projet pour l’instant.', noImage: 'Pas d’image'
+        },
+        contact: {
+            title: 'Prendre contact', intro: 'Je suis Anukun Boontha. N’hésitez pas à me contacter pour collaborer ou simplement dire bonjour.',
+            universityLabel: 'Université', universityVal: 'Université Suan Dusit',
+            locationLabel: 'Localisation', locationVal: 'Bangkok, Thaïlande',
+            contactLabel: 'Contact', socialsLabel: 'Réseaux',
+            loading: 'Chargement...'
+        },
+        admin: {
+            nav: { home: 'Accueil', background: 'Arrière-plan', profile: 'Profil', product: 'Produit', contact: 'Contact', footer: 'Pied de page' },
+            login: {
+                title: 'Portail Admin',
+                subtitle: 'Accès sécurisé uniquement',
+                username: 'Nom d’utilisateur',
+                usernamePlaceholder: 'Entrez le nom d’utilisateur',
+                password: 'Mot de passe',
+                passwordPlaceholder: 'Entrez le mot de passe',
+                authorize: 'Se connecter',
+                invalid: 'Nom d’utilisateur ou mot de passe invalide',
+                show: 'Afficher',
+                hide: 'Masquer'
+            },
+            theme: { textColor: 'Couleur du texte', reset: 'Réinitialiser' },
+            common: { logout: 'Se déconnecter', backToHomeAdmin: 'Retour à Home Admin' },
+            background: {
+                title: 'Arrière-plan',
+                subtitle: 'Changer l’arrière-plan du site. Prend en charge .mp4 et les images jusqu’à 50 Mo.',
+                type: 'Type',
+                video: 'Vidéo',
+                image: 'Image',
+                upload: 'Téléverser (Max 50 Mo)',
+                noneSelected: 'Aucun arrière-plan sélectionné'
             }
         }
     }
