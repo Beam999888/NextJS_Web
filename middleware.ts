@@ -19,12 +19,12 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    if (!session && !onAuthPage) {
-        const url = req.nextUrl.clone();
-        url.pathname = '/login';
-        url.searchParams.set('redirect', `${pathname}${search}`);
-        return NextResponse.redirect(url);
-    }
+    // if (!session && !onAuthPage) {
+    //     const url = req.nextUrl.clone();
+    //     url.pathname = '/login';
+    //     url.searchParams.set('redirect', `${pathname}${search}`);
+    //     return NextResponse.redirect(url);
+    // }
 
     return NextResponse.next();
 }

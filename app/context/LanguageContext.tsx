@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { translations } from '../utils/translations';
 
 export type LanguageCode = 'en' | 'th' | 'zh' | 'de' | 'ru' | 'fr';
@@ -25,21 +25,35 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [language, setLanguage] = useState<LanguageCode>(() => {
-        if (typeof window === 'undefined') return 'en';
-        const savedLang = localStorage.getItem('app-language');
-        if (savedLang && languages.some((l) => l.code === savedLang)) {
-            return savedLang as LanguageCode;
-        }
-        return 'en';
-    });
+    const [language, setLanguage] = useState<LanguageCode>('en');
 
-    const [textColor, setTextColor] = useState<string>(() => {
-        if (typeof window === 'undefined') return '#000000';
-        const saved = localStorage.getItem('admin-text-color');
-        if (typeof saved === 'string' && saved.trim()) return saved;
-        return '#000000';
-    });
+    const [textColor, setTextColor] = useState<string>('#000000');
+
+    useEffect(() => {
+        try {
+            const savedLang = typeof window !== 'undefined' ? localStorage.getItem('app-language') : null;
+            if (savedLang && languages.some((l) => l.code === savedLang)) {
+                const id = window.setTimeout(() => {
+                    setLanguage(savedLang as LanguageCode);
+                }, 0);
+                return () => window.clearTimeout(id);
+            }
+        } catch {
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            const saved = typeof window !== 'undefined' ? localStorage.getItem('admin-text-color') : null;
+            if (typeof saved === 'string' && saved.trim()) {
+                const id = window.setTimeout(() => {
+                    setTextColor(saved);
+                }, 0);
+                return () => window.clearTimeout(id);
+            }
+        } catch {
+        }
+    }, []);
 
     const handleSetLanguage = (lang: LanguageCode) => {
         setLanguage(lang);
