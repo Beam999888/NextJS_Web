@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPool } from '../_db';
-import type { RowDataPacket } from 'mysql2/promise';
+import path from 'path';
+import fs from 'fs';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
     try {
-        const province = req.nextUrl.searchParams.get('province') || '';
-        const amphoe = req.nextUrl.searchParams.get('amphoe') || '';
-        if (!province || !amphoe) return NextResponse.json([]);
-        const pool = getPool();
-        const sql = `
-            SELECT t.name_th AS name, t.zip_code AS zip 
-            FROM tambons t 
-            JOIN amphoes a ON t.amphoe_id = a.id 
-            JOIN provinces p ON a.province_id = p.id
-            WHERE p.name_th = ? AND a.name_th = ?
-            ORDER BY t.name_th
-        `;
-        interface TambonRow extends RowDataPacket { name: string; zip: string }
-        const [rows] = await pool.query<TambonRow[]>(sql, [province, amphoe]);
-        return NextResponse.json(rows);
-    } catch {
-        return NextResponse.json({ error: 'db_unavailable' }, { status: 500 });
+        const provinceName = req.nextUrl.searchParams.get('province') || '';
+        const amphoeName = req.nextUrl.searchParams.get('amphoe') || '';
+        
+        if (!provinceName || !amphoeName) return NextResponse.json([]);
+
+        const filePath = path.join(process.cwd(), 'data', 'api_province_with_amphure_tambon.json');
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const provinces = JSON.parse(fileContent);
+
+        const province = provinces.find((p: any) => p.name_th === provinceName);
+        if (!province || !province.amphure) return NextResponse.json([]);
+
+        const amphoe = province.amphure.find((a: any) => a.name_th === amphoeName);
+        if (!amphoe || !amphoe.tambon) return NextResponse.json([]);
+
+        const list = amphoe.tambon
+            .map((t: any) => ({ name: t.name_th, zip: t.zip_code }))
+            .sort((a: any, b: any) => a.name.localeCompare(b.name, 'th'));
+            
+        return NextResponse.json(list);
+    } catch (error) {
+        console.error('Error reading tambons:', error);
+        return NextResponse.json({ error: 'failed_to_load_data' }, { status: 500 });
     }
 }

@@ -1,26 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPool } from '../_db';
-import type { RowDataPacket } from 'mysql2/promise';
+import path from 'path';
+import fs from 'fs';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
     try {
-        const province = req.nextUrl.searchParams.get('province') || '';
-        if (!province) return NextResponse.json([], { status: 200 });
-        const pool = getPool();
-        const sql = `
-            SELECT a.name_th 
-            FROM amphoes a 
-            JOIN provinces p ON a.province_id = p.id 
-            WHERE p.name_th = ? 
-            ORDER BY a.name_th
-        `;
-        interface AmphoeRow extends RowDataPacket { name_th: string }
-        const [rows] = await pool.query<AmphoeRow[]>(sql, [province]);
-        const list = rows.map((r) => r.name_th);
+        const provinceName = req.nextUrl.searchParams.get('province') || '';
+        if (!provinceName) return NextResponse.json([], { status: 200 });
+
+        const filePath = path.join(process.cwd(), 'data', 'api_province_with_amphure_tambon.json');
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const provinces = JSON.parse(fileContent);
+
+        const province = provinces.find((p: any) => p.name_th === provinceName);
+        if (!province || !province.amphure) return NextResponse.json([], { status: 200 });
+
+        const list = province.amphure.map((a: any) => a.name_th).sort((a: string, b: string) => a.localeCompare(b, 'th'));
         return NextResponse.json(list);
-    } catch {
-        return NextResponse.json({ error: 'db_unavailable' }, { status: 500 });
+    } catch (error) {
+        console.error('Error reading amphoes:', error);
+        return NextResponse.json({ error: 'failed_to_load_data' }, { status: 500 });
     }
 }

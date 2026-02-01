@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getPool } from '../_db';
-import type { RowDataPacket } from 'mysql2/promise';
+import path from 'path';
+import fs from 'fs';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
     try {
-        const pool = getPool();
-        interface ProvinceRow extends RowDataPacket { name_th: string }
-        const [rows] = await pool.query<ProvinceRow[]>('SELECT name_th FROM provinces ORDER BY name_th');
-        const list = rows.map((r) => r.name_th);
+        const filePath = path.join(process.cwd(), 'data', 'api_province_with_amphure_tambon.json');
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const provinces = JSON.parse(fileContent);
+        
+        const list = provinces.map((p: any) => p.name_th).sort((a: string, b: string) => a.localeCompare(b, 'th'));
         return NextResponse.json(list);
-    } catch {
-        return NextResponse.json({ error: 'db_unavailable' }, { status: 500 });
+    } catch (error) {
+        console.error('Error reading provinces:', error);
+        return NextResponse.json({ error: 'failed_to_load_data' }, { status: 500 });
     }
 }
