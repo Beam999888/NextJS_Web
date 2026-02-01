@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
+import provincesData from '@/data/api_province_with_amphure_tambon.json';
 
 export const runtime = 'nodejs';
 
@@ -11,11 +10,7 @@ export async function GET(req: NextRequest) {
         
         if (!provinceName || !amphoeName) return NextResponse.json([]);
 
-        const filePath = path.join(process.cwd(), 'data', 'api_province_with_amphure_tambon.json');
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const provinces = JSON.parse(fileContent);
-
-        const province = provinces.find((p: any) => p.name_th === provinceName);
+        const province = (provincesData as any[]).find((p: any) => p.name_th === provinceName);
         if (!province || !province.amphure) return NextResponse.json([]);
 
         const amphoe = province.amphure.find((a: any) => a.name_th === amphoeName);
