@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getPool } from '../address/_db';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,41 @@ const tmpDataFilePath = path.join(tmpDir, 'stats.json');
 const onlineTtlMs = 45_000;
 let activeDataFilePath: string | null = null;
 let memoryData: VisitorStatsFile | null = null;
+
+// Database Helper
+async function getDBStats(): Promise<number | null> {
+    try {
+        const pool = getPool();
+        // Create table if not exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS site_stats (
+                id INT PRIMARY KEY,
+                total_views INT DEFAULT 0
+            )
+        `);
+        // Ensure initial row exists
+        await pool.query(`INSERT IGNORE INTO site_stats (id, total_views) VALUES (1, 0)`);
+        
+        const [rows] = await pool.query('SELECT total_views FROM site_stats WHERE id = 1');
+        const result = rows as any[];
+        if (result.length > 0) {
+            return result[0].total_views;
+        }
+        return 0;
+    } catch (error) {
+        // console.error('DB Read Error:', error);
+        return null;
+    }
+}
+
+async function updateDBStats(totalViews: number): Promise<void> {
+    try {
+        const pool = getPool();
+        await pool.query('UPDATE site_stats SET total_views = ? WHERE id = 1', [totalViews]);
+    } catch (error) {
+        // console.error('DB Write Error:', error);
+    }
+}
 
 function getDefaultData(): VisitorStatsFile {
     return { totalViews: 0, online: {} };
@@ -39,34 +75,46 @@ function readFromPath(filePath: string): VisitorStatsFile | null {
     }
 }
 
-function readData(): VisitorStatsFile {
+async function readData(): Promise<VisitorStatsFile> {
+    // Try DB first for totalViews
+    const dbViews = await getDBStats();
+    
+    // Read local/tmp file for online users and fallback views
+    let localData: VisitorStatsFile = memoryData ?? getDefaultData();
+    
     const activePath = activeDataFilePath;
     if (activePath) {
         const activeData = readFromPath(activePath);
-        if (activeData) {
-            memoryData = activeData;
-            return activeData;
+        if (activeData) localData = activeData;
+    } else {
+        const tmpData = readFromPath(tmpDataFilePath);
+        if (tmpData) {
+            activeDataFilePath = tmpDataFilePath;
+            localData = tmpData;
+        } else {
+            const repoData = readFromPath(repoDataFilePath);
+            if (repoData) {
+                activeDataFilePath = tmpDataFilePath;
+                localData = repoData;
+            }
         }
     }
+    
+    memoryData = localData;
 
-    const tmpData = readFromPath(tmpDataFilePath);
-    if (tmpData) {
-        activeDataFilePath = tmpDataFilePath;
-        memoryData = tmpData;
-        return tmpData;
+    // Merge DB views if available
+    if (dbViews !== null) {
+        localData.totalViews = dbViews;
     }
 
-    const repoData = readFromPath(repoDataFilePath);
-    if (repoData) {
-        activeDataFilePath = tmpDataFilePath;
-        memoryData = repoData;
-        return repoData;
-    }
-
-    return memoryData ?? getDefaultData();
+    return localData;
 }
 
-function writeData(data: VisitorStatsFile) {
+async function writeData(data: VisitorStatsFile) {
+    // Write to DB
+    await updateDBStats(data.totalViews);
+
+    // Write to File (for online users and fallback)
     const payload = JSON.stringify(data, null, 2);
     const primary = tmpDataFilePath;
 
@@ -99,13 +147,13 @@ function getOrCreateVisitorId(req: NextRequest) {
 }
 
 export async function GET() {
-    const data = readData();
+    const data = await readData();
     const online = data.online ?? {};
     const now = Date.now();
     const beforeCount = Object.keys(online).length;
     cleanOnline(online, now);
     const afterCount = Object.keys(online).length;
-    if (afterCount !== beforeCount) writeData({ ...data, online });
+    if (afterCount !== beforeCount) await writeData({ ...data, online });
     return NextResponse.json({ totalViews: data.totalViews, onlineCount: Object.keys(online).length });
 }
 
@@ -115,7 +163,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json().catch(() => ({}))) as { type?: 'hit' | 'heartbeat' };
     const type = body?.type === 'heartbeat' ? 'heartbeat' : 'hit';
 
-    const data = readData();
+    const data = await readData();
     const online = data.online ?? {};
     cleanOnline(online, now);
     online[visitorId] = now;
@@ -123,7 +171,7 @@ export async function POST(req: NextRequest) {
 
     if (type === 'hit') data.totalViews = (data.totalViews ?? 0) + 1;
 
-    writeData(data);
+    await writeData(data);
 
     const res = NextResponse.json({ totalViews: data.totalViews, onlineCount: Object.keys(online).length });
     if (!req.cookies.get('visitor_id')?.value) {
