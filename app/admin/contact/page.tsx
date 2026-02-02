@@ -221,6 +221,67 @@ export default function AdminContactPage() {
         }));
     };
 
+    const handleZipChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setContact((prev) => ({ ...prev, addressZip: value }));
+
+        if (value.length === 5) {
+            try {
+                const res = await fetch(`/api/address/zipcode?zip=${value}`);
+                if (res.ok) {
+                    const matches = await res.json();
+                    if (Array.isArray(matches) && matches.length > 0) {
+                        const match = matches[0];
+                        
+                        // 1. Fetch Amphoes for the matched province
+                        let newAmphoes: string[] = [];
+                        if (hasMysql) {
+                            try {
+                                const resA = await fetch(`/api/address/amphoes?province=${encodeURIComponent(match.province)}`);
+                                if (resA.ok) newAmphoes = await resA.json();
+                            } catch {}
+                        } else if (isDbReady) {
+                             newAmphoes = Array.from(new Set(db.filter((r) => r.province === match.province).map((r) => r.amphoe))).sort((a, b) => a.localeCompare(b, 'th'));
+                        } else {
+                             try {
+                                const resA = await fetch(`/api/amphoes?province=${encodeURIComponent(match.province)}`);
+                                if (resA.ok) newAmphoes = await resA.json();
+                             } catch {}
+                        }
+                        setAmphoes(newAmphoes);
+
+                        // 2. Fetch Tambons for the matched amphoe
+                        let newTambons: any[] = [];
+                        if (hasMysql) {
+                            try {
+                                const resT = await fetch(`/api/address/tambons?province=${encodeURIComponent(match.province)}&amphoe=${encodeURIComponent(match.amphoe)}`);
+                                if (resT.ok) newTambons = await resT.json();
+                            } catch {}
+                        } else if (isDbReady) {
+                            const filtered = db.filter((r) => r.province === match.province && r.amphoe === match.amphoe);
+                            const uniqueNames = Array.from(new Set(filtered.map((r) => r.district))).sort((a, b) => a.localeCompare(b, 'th'));
+                            newTambons = uniqueNames.map((n) => {
+                                const row = filtered.find((r) => r.district === n);
+                                return { name: n, zip: row?.zipcode || '' };
+                            });
+                        }
+                        setTambons(newTambons);
+
+                        // 3. Set Contact State
+                        setContact((prev) => ({
+                            ...prev,
+                            addressProvince: match.province,
+                            addressAmphoe: match.amphoe,
+                            addressTambon: match.tambon
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error("Auto-fill address failed", error);
+            }
+        }
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
 
@@ -443,7 +504,7 @@ export default function AdminContactPage() {
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider">รหัสไปรษณีย์</label>
-                            <input name="addressZip" value={contact.addressZip || ''} onChange={handleChange} className="w-full border p-2 rounded bg-white" readOnly={hasMysql || isDbReady} />
+                            <input name="addressZip" value={contact.addressZip || ''} onChange={handleZipChange} className="w-full border p-2 rounded bg-white" />
                         </div>
                     </div>
                     {message && (
